@@ -1,9 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 
 public class Ship {
     public static void main(String[] args) {
@@ -48,9 +45,8 @@ class SPanel extends JPanel implements KeyListener {
         // calling paintComponent again
         repaint();
     }
-    public BufferedImage getImage() throws Exception {
-        final BufferedImage bi = ImageIO.read(new File("spaceship.png"));
-        return bi;
+    public Image getImage() throws Exception {
+        return new ImageIcon("spaceship.png").getImage();
     }
     public void drawShip(Graphics g) {
         // finding how many seconds passed since the last paintComponent
@@ -79,14 +75,7 @@ class SPanel extends JPanel implements KeyListener {
         if(shipY > 865) shipY = 1;
         else if(shipY < -65) shipY = 799;
         // drawing the image
-        try {
-            BufferedImage ship = getImage();
-            Graphics2D g2d = (Graphics2D) g;
-            g2d.rotate(Math.toRadians(rotationDeg), shipX + 30, shipY + 30);
-            g2d.drawImage(ship, (int)shipX, (int)shipY, 60, 60, null);
-        } catch(Exception e) {
-            throw new RuntimeException(e);
-        }
+
         // updating the previous variable
         previous = current;
     }
