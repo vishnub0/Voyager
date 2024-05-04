@@ -3,22 +3,18 @@ Vishnu Bharadwaj
 4/28/24
 Voyager.java
 This is my game, Voyager. It is a game based off of the Star Trek Original Series that uses all of my java knowledge in
-a fun game. Currently, I have finished the homepage and the instructions page for level 1.
+a fun game. Currently, I have finished the homepage and I am working on Level 1 (you can switch between levels).
 */
 
 import javax.swing.*; import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.Scanner;
-
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
 
 // This is the main class which contains the main method and method to create the JFrame.
 public class Voyager {
@@ -44,6 +40,19 @@ public class Voyager {
 // This is the VPanel class which is the content pane of the JFrame. It contains all the code to build my game.
 class VPanel extends JPanel {
     CardLayout cl;
+    Font stf;
+    {
+        try {
+            stf = Font.createFont(Font.TRUETYPE_FONT, new File("stf.ttf")).deriveFont(35f);
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            ge.registerFont(stf);
+        } catch (FontFormatException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    final Color GOLD = new Color(211, 142, 38);
     ArrayList<Star> stars = new ArrayList<>();
     Timer starTimer;
     Image logo = new ImageIcon("voyager-logo.png").getImage();
@@ -118,6 +127,7 @@ class VPanel extends JPanel {
     public void nextPanel() {
         cl.next(this);
     }
+    // This method is used to play an audio file (filename), and loops it if the parameter loop is true
     public void playMusic(String filename, boolean loop) { // plays background music
         try{
             File musicPath = new File(filename);
@@ -133,7 +143,6 @@ class VPanel extends JPanel {
             System.exit(1);
         }
     }
-
     // This is the JPanel for the homepage, and contains all the methods and variables to draw the homepage.
     class Homepage extends JPanel implements MouseListener, MouseMotionListener {
         boolean hovering = false;
@@ -251,51 +260,345 @@ class VPanel extends JPanel {
             repaint();
         }
     }
+    // This is the JPanel for the level 1, and contains all the methods and variables to draw the first level.
     class Level1 extends JPanel implements MouseListener {
         CardLayout cl2;
         boolean instructions = true;
+        Shooter shooter;
+        // This is the constructor which sets the layout and calls the run2 method in order to create the JPanels.
         public Level1() {
             cl2 = new CardLayout();
             setLayout(cl2);
             addMouseListener(this);
             run2();
         }
+        // This is the run2 method which creates the instructions page and the page for the game.
         public void run2() {
             JPanel instructions = new JPanel();
             instructions.setBackground(Color.BLACK);
             add(instructions, "instructions");
-            JPanel shooter = new JPanel();
-            shooter.setBackground(Color.WHITE);
+            shooter = new Shooter();
             add(shooter, "shooter");
+            SWin  win = new SWin();
+            add(win, "win");
+            SLose lose = new SLose();
+            add(lose, "lose");
         }
+        // This is the pC for Level1 which sets the background and grabs the focus.
         public void paintComponent(Graphics g) {
             grabFocus();
             super.paintComponent(g);
         }
+        class Shooter extends JPanel implements MouseListener, MouseMotionListener, KeyListener {
+            Timer eTimer;
+            eHandler eh;
+            Image blaster = new ImageIcon("laser_blaster.png").getImage();
+            double rotationRad = 0.0;
+            boolean entered = false;
+            ArrayList<Laser> lasers = new ArrayList<>();
+            lHandler lh;
+            Timer lTimer, spawnTimer, supplyTimer, countdown;
+            int secondsLeft = 60;
+            long prev = System.currentTimeMillis();
+            ArrayList<Enemy> enemies = new ArrayList<>();
+            int numShots = 7;
+            boolean allDead = true;
+            Image heart = new ImageIcon("heart.png").getImage();
+            int lives = 3;
+            public Shooter() {
+                setBackground(Color.CYAN);
+                addMouseListener(this);
+                addMouseMotionListener(this);
+                addKeyListener(this);
+                eTimer = new Timer(10, new eHandler());
+                lTimer = new Timer(1, new lHandler());
+                spawnTimer = new Timer(2000, new SpawnHandler());
+                supplyTimer = new Timer(1000, new SuppHandler());
+                countdown = new Timer(1000, new CountHandler());
+            }
+            public void __init__() {
+                eTimer.start();
+                lTimer.start();
+                spawnTimer.start();
+                supplyTimer.start();
+                countdown.start();
+            }
+            public void stopAll() {
+                eTimer.stop();
+                lTimer.stop();
+                spawnTimer.stop();
+                supplyTimer.stop();
+                countdown.stop();
+            }
+            public void paintComponent(Graphics g) {
+                grabFocus();
+                super.paintComponent(g);
+                while(checkShot()){}
+                while(removeLasers()){}
+                for(Enemy e : enemies) e.drawEnemy(g);
+                for(Laser laser : lasers) laser.drawLaser(g);
+                g.setFont(stf);
+                g.setColor(GOLD);
+                g.drawString("" + secondsLeft, 375, 50);
+                if(allDead && secondsLeft == 0) g.drawString("You win!", 375, 400);
+                for(int i = 0; i < lives*25; i += 25) g.drawImage(heart, 600 + i, 10, 20, 20, null);
+                g.setColor(Color.RED);
+                g.fillRect(10, 10, 20 * numShots, 20);
+                try {
+                    Graphics2D g2d = (Graphics2D) g;
+                    g2d.rotate(rotationRad+Math.PI/2, 400, 700);
+                    g2d.drawImage(blaster, 375, 700, 50, 50, null);
+                } catch(Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            public boolean checkShot() {
+                for(Laser l : lasers) {
+                    Rectangle rect = new Rectangle((int)l.x, (int)l.y, 5, 5);
+                    for(Enemy e : enemies) {
+                        if(rect.intersects(new Rectangle(e.x_coord, e.y_coord, 75, 100)) && !e.shot && e.y_coord < 650) {
+                            e.shot = true;
+                            lasers.remove(l);
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+            class SpawnHandler implements ActionListener {
 
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    enemies.add(new Enemy());
+                    repaint();
+                }
+            }
+            class SuppHandler implements ActionListener {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if(numShots < 7) numShots++;
+                    repaint();
+                }
+            }
+            class CountHandler implements ActionListener {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if(secondsLeft > 0) secondsLeft--;
+                    if(secondsLeft == 40) {
+                        spawnTimer.stop();
+                        spawnTimer = new Timer(1000, new SpawnHandler());
+                        spawnTimer.start();
+                    } else if(secondsLeft == 20) {
+                        spawnTimer.stop();
+                        spawnTimer = new Timer(500, new SpawnHandler());
+                        spawnTimer.start();
+                    } else if(secondsLeft == 0) {
+                        for(Enemy e3 : enemies) {
+                            if(e3.y_coord >= 650 && !e3.shot) allDead = false;
+                        }
+                        if(allDead) {
+                            stopAll();
+                            showPanel("win");
+                        }
+                    }
+                    repaint();
+                }
+            }
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if(numShots > 0) {
+                    lasers.add(new Laser(Math.toDegrees(rotationRad)));
+                    numShots--;
+                }
+                repaint();
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                entered = true;
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                entered = false;
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                if(entered) {
+                    int x = e.getX();
+                    int y = e.getY();
+                    x -= 400;
+                    y -= 700;
+                    rotationRad = Math.atan2(y, x);
+                }
+            }
+            public boolean removeLasers() {
+                for(Laser l : lasers) {
+                    if(l.x < 0 || l.x > 800 || l.y < 0 || l.y > 800) {
+                        lasers.remove(l);
+                        return true;
+                    }
+                }
+                return false;
+            }
+            class eHandler implements ActionListener {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    for(Enemy e2 : enemies) {
+                        if(e2.y_coord < 650) e2.y_coord++;
+                        if(e2.y_coord >= 650 && !e2.shot) {
+                            if(lives > 0 && !e2.alreadyCounted) {
+                                lives--;
+                                e2.alreadyCounted = true;
+                            } else if(lives <= 0) {
+                                stopAll();
+                                showPanel("lose");
+                            }
+                        }
+                        e2.check();
+                    }
+                    repaint();
+                }
+            }
+            class lHandler implements ActionListener {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    long current = System.currentTimeMillis();
+                    for(Laser laser : lasers) {
+                        laser.x += 8 * Math.cos(Math.toRadians(laser.rot)) * (current-prev)/10;
+                        laser.y += 8 * Math.sin(Math.toRadians(laser.rot)) * (current-prev)/10;
+                    }
+                    prev = current;
+                }
+            }
+            class Enemy {
+                boolean shot = false;
+                boolean alreadyCounted = false;
+                int x_coord = (int)(Math.random()*751) + 25;
+                int y_coord = 10;
+                static Image[] imgs = new Image[5];
+                long timeShot = -1;
+                int current = 0;
+                public Enemy() {
+                    for(int i = 1; i < 6; i++) imgs[i-1] = new ImageIcon("Sprite" + i + ".png").getImage();
+                }
+                public void drawEnemy(Graphics g) {
+                    g.drawImage(imgs[current], x_coord, y_coord, 75, 100, null);
+                }
+                public void check() {
+                    if(y_coord >= 650 && timeShot < 0) timeShot = System.currentTimeMillis();
+                    long time = System.currentTimeMillis();
+                    if(y_coord < 650) {
+                        if(!shot) current = 0;
+                        else current = 1;
+                    } else {
+                        if(shot && current < 4) {
+                            long diff = time - timeShot;
+
+                            if(diff < 1000) current = 2;
+                            else if(diff >= 1000 && diff < 2000) current = 3;
+                            else current = 4;
+                        }
+                    }
+                }
+            }
+            class Laser {
+                double rot;
+                double x = 400;
+                double y = 700;
+                public Laser(double rotRad) {
+                    rot = rotRad;
+                }
+                public void drawLaser(Graphics g) {
+                    ((Graphics2D)g).setStroke(new BasicStroke(10));
+                    g.setColor(Color.RED);
+                    g.drawLine(400, 700, (int)x, (int)y);
+                }
+            }
+        }
+        class SWin extends JPanel {
+            public SWin() {
+                setBackground(Color.BLACK);
+            }
+            public void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                g.setFont(stf);
+                g.setColor(GOLD);
+                g.drawString("You win!", 400, 400);
+            }
+        }
+        class SLose extends JPanel {
+            public SLose() {
+                setBackground(Color.BLACK);
+            }
+            public void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                g.setFont(stf);
+                g.setColor(GOLD);
+                g.drawString("You lose!", 400, 400);
+            }
+        }
+        public void showPanel(String name) {
+            cl2.show(this, name);
+        }
+        // This is the method called whenever the mouse is clicked and goes to the next panel in the layout.
         @Override
         public void mouseClicked(MouseEvent e) {
             if(instructions) {
                 cl2.next(this);
+                shooter.__init__();
                 instructions = false;
             }
         }
-
+        // This is the method called whenever the user's mouse is pressed (currently has nothing).
         @Override
         public void mousePressed(MouseEvent e) {
 
         }
-
+        // This is the method called whenever the user's mouse is released (currently has nothing).
         @Override
         public void mouseReleased(MouseEvent e) {
 
         }
-
+        // This is the method called whenever the user's mouse enters the homepage (currently has nothing).
         @Override
         public void mouseEntered(MouseEvent e) {
 
         }
-
+        // This is the method called whenever the user's mouse exits the homepage (currently has nothing).
         @Override
         public void mouseExited(MouseEvent e) {
 
