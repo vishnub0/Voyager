@@ -3,7 +3,7 @@ Vishnu Bharadwaj
 4/28/24
 Voyager.java
 This is my game, Voyager. It is a game based off of the Star Trek Original Series that uses all of my java knowledge in
-a fun game. Currently, I have finished the homepage and I am working on Level 1 (you can switch between levels).
+a fun game. Currently, I have finished the homepage and level 1 gameplay, I am working on level 2.
 */
 
 import javax.swing.*; import java.awt.*;
@@ -70,7 +70,7 @@ class VPanel extends JPanel {
         add(homepage, "homepage");
         level1 = new Level1();
         add(level1, "l1");
-        JPanel level2 = new JPanel();
+        Level2 level2 = new Level2();
         add(level2, "l2");
         JPanel level3 = new JPanel();
         add(level3, "l3");
@@ -116,7 +116,7 @@ class VPanel extends JPanel {
         cl.next(this);
     }
     // This method is used to play an audio file (filename), and loops it if the parameter loop is true
-    public void playMusic(String filename, boolean loop) { // plays background music
+    public void playMusic(String filename, boolean loop) {
         try{
             File musicPath = new File(filename);
             if (musicPath.exists()) {
@@ -443,7 +443,8 @@ class VPanel extends JPanel {
                     throw new RuntimeException(e);
                 }
             }
-            // This method is used to check if a laser hits an enemy or particle, in which case it is deleted and the respective action is performed
+            // This method is used to check if a laser hits an enemy or particle, in which case it is deleted and the
+            // respective action is performed
             public boolean checkShot() {
                 for(Laser l : lasers) {
                     Rectangle rect = new Rectangle((int)l.x, (int)l.y, 5, 5);
@@ -477,7 +478,8 @@ class VPanel extends JPanel {
             }
             // This handler class is called whenever the user freezes the enemies, unfreezes enemies after 3 seconds
             class FreezeHandler implements ActionListener {
-                // This is the method which "thaws" all the enemies once after 3 seconds of being frozen, it then stops the timer and calls pC
+                // This is the method which "thaws" all the enemies once after 3 seconds of being frozen, it then stops
+                // the timer and calls pC
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     frozen = false;
@@ -541,7 +543,7 @@ class VPanel extends JPanel {
             public void keyTyped(KeyEvent e) {
 
             }
-            // This is the keyPressed method which checks if the user used their super move if the pressed s
+            // This is the keyPressed method which checks if the user used their super move if they pressed 's'
             @Override
             public void keyPressed(KeyEvent e) {
                 int keycode = e.getKeyCode();
@@ -592,7 +594,7 @@ class VPanel extends JPanel {
             public void mouseDragged(MouseEvent e) {
 
             }
-            // This is the mouseMoved method which updates the rotationRad var to determine where the laser will be fired
+            // This is the mouseMoved method which updates the rotationRad var to determine where the laser is fired
             @Override
             public void mouseMoved(MouseEvent e) {
                 if(entered) {
@@ -623,9 +625,11 @@ class VPanel extends JPanel {
                 }
                 return false;
             }
-            // This handler class is responsible for updating the locations of the enemies and the particles every 10 milliseconds
+            // This handler class is responsible for updating the locations of the enemies and the particles every 10
+            // milliseconds
             class eHandler implements ActionListener {
-                // This method is used to update the location of the enemies and the particles, also updating which sprite is displayed
+                // This method is used to update the location of the enemies and the particles, also updating which
+                // sprite is displayed
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if(!frozen) {
@@ -665,7 +669,7 @@ class VPanel extends JPanel {
                     prev = current;
                 }
             }
-            // This is the enemy class which contains all of the information required to create and draw an enemy
+            // This is the enemy class which contains all the information required to create and draw an enemy
             class Enemy {
                 boolean shot = false;
                 boolean alreadyCounted = false;
@@ -722,17 +726,40 @@ class VPanel extends JPanel {
             }
         }
         // This class extends JPanel and the user is transported here if they beat level 1
-        class SWin extends JPanel {
+        class SWin extends JPanel implements KeyListener {
             // This constructor sets the bg of the win panel to be black
             public SWin() {
                 setBackground(Color.BLACK);
+                addKeyListener(this);
             }
             // This method displays the text "You win!" on the win panel
             public void paintComponent(Graphics g) {
+                grabFocus();
                 super.paintComponent(g);
                 g.setFont(stf);
                 g.setColor(GOLD);
                 g.drawString("You win!", 400, 400);
+                getSTF(35f);
+                g.drawString("PRESS SPACE TO CONTINUE", 200, 700);
+            }
+
+            @Override
+            public void keyTyped(KeyEvent e) {
+
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                int keycode = e.getKeyCode();
+                System.out.println(keycode);
+                if(keycode == 32) {
+                    nextPanel();
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+
             }
         }
         // This class extends JPanel and the user is transported here if they lose on level 1
@@ -783,16 +810,473 @@ class VPanel extends JPanel {
 
         }
     }
+    // This is the JPanel for the second level and contains all the methods and variables to draw the level.
+    class Level2 extends JPanel implements MouseListener {
+        CardLayout cl3;
+        SpaceBattle sb;
+        boolean instructions = true;
+        public Level2() {
+            cl3 = new CardLayout();
+            setLayout(cl3);
+//            addKeyListener(this);
+            addMouseListener(this);
+            run3();
+            StarHandler sh = new StarHandler();
+            starTimer = new Timer(10, sh);
+            starTimer.start();
+        }
+        public void run3() {
+            Instructions is = new Instructions();
+            sb = new SpaceBattle();
+            WinPanel wp = new WinPanel();
+            LosePanel lp = new LosePanel();
+            add(is, "instructions");
+            add(sb, "sb");
+            add(wp, "win");
+            add(lp, "lose");
+        }
+        public void paintComponent(Graphics g) {
+            grabFocus();
+            super.paintComponent(g);
+        }
+        // This is the instructions panel which teaches the user how to steer their ship and fire torpedoes.
+        class Instructions extends JPanel {
+            public Instructions() {
+                setBackground(Color.BLACK);
+            }
+            public void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                long current = System.currentTimeMillis();
+                if(current - prev >= 10) {
+                    int numStars = (int) (Math.random() * 11);
+                    for (int i = 0; i < numStars; i++) stars.add(new Star());
+                    prev = current;
+                }
+                while(removeStars()) {}
+                for(Star star : stars) star.drawStar(g);
+                getSTF(40f);
+                g.setFont(stf);
+                g.setColor(GOLD);
+                g.drawString("INSTRUCTIONS: SPACE FIGHT", 225, 45);
+                g.drawString("OBJECTIVE: SHOOT DOWN ALL KLINGONS", 100, 145);
+                getSTF(35f);
+                g.setFont(stf);
+                g.drawString("Use up arrow to move", 100, 220);
+                g.drawString("Use up right/left to rotate", 100, 260);
+                g.drawString("Use up space to brake", 100, 300);
+                g.drawString("Use up 's' to shoot torpedoes", 100, 340);
+                g.drawString("Use torpedoes to destroy Klingon ships", 100, 400);
+                g.drawString("They can withstand more than one", 100, 440);
+                g.drawString("Avoid enemy torpedoes!", 100, 500);
+                getSTF(40f);
+                g.setFont(stf);
+                g.drawString("Press mouse to continue", 200, 700);
+                g.drawImage(new ImageIcon("spaceship.png").getImage(), 600, 180, 60, 120, null);
+                g.drawImage(new ImageIcon("torpedo.png").getImage(), 600, 320, 80, 16, null);
+                g.drawImage(new ImageIcon("klingonship.png").getImage(), 600, 480, 140, 80, null);
+            }
+        }
+        // This is the class for the actual space battle
+        class SpaceBattle extends JPanel implements KeyListener {
+            double shipX = 400; double shipY = 400;
+            double rotationDeg = 0.0;
+            long previous = 0;
+            long current = 0;
+            double diff = 0;
+            int lcount = 0;
+            int rcount = 0;
+            int ucount = 0;
+            int scount = 0;
+            double velocityX = 0;
+            double velocityY = 0;
+            Image torpedo;
+            ArrayList<Torpedo> torpedoes = new ArrayList<>();
+            ArrayList<Torpedo> torpedoes2 = new ArrayList<>();
+            Timer torpTimer, actTimer, spawnTimer2;
+            ArrayList<EnemyShip> enemies = new ArrayList<>();
+            int playerHealth = 250;
+            Image explosion;
+            int stage = 1;
+            int enemiesLeft = 6;
+            // This constructor initializes timers and loads images
+            public SpaceBattle() {
+                setBackground(Color.BLACK);
+                addKeyListener(this);
+                torpedo = new ImageIcon("torpedo.png").getImage();
+                torpTimer = new Timer(10, new TorpHandler());
+                actTimer = new Timer(10, new ActHandler());
+                enemies.add(new EnemyShip());
+                explosion = new ImageIcon("explosion.png").getImage();
+                spawnTimer2 = new Timer(10, new SpawnHandler2());
+            }
+            // This method is used to start the timers
+            public void initialize() {
+                torpTimer.start();
+                actTimer.start();
+                spawnTimer2.start();
+            }
+            // This method is used to stop the timers
+            public void stopAll() {
+                torpTimer.stop();
+                actTimer.stop();
+                spawnTimer2.stop();
+            }
+            // this method draws all the stars, ships, and torpedoes on the screen
+            public void paintComponent(Graphics g) {
+                grabFocus();
+                super.paintComponent(g);
+                long current = System.currentTimeMillis();
+                if(current - prev >= 10) {
+                    int numStars = (int) (Math.random() * 11);
+                    for (int i = 0; i < numStars; i++) stars.add(new Star());
+                    prev = current;
+                }
+                while(removeStars()) {}
+                for(Star star : stars) star.drawStar(g);
+                getSTF(30f);
+                g.setFont(stf);
+                g.setColor(GOLD);
+                g.drawString("HP:", 10, 40);
+                g.drawString("Enemies left: " + enemiesLeft, 320, 40);
+                g.setColor(Color.RED);
+                g.fillRect(50, 20, playerHealth, 20);
+                while(removeTorpedoes()){}
+                while(checkShot());
+                for (Torpedo torpedo1 : torpedoes) torpedo1.drawTorpedo(g);
+                for (Torpedo torpedo1 : torpedoes2) torpedo1.drawTorpedo(g);
+                for (EnemyShip enemy : enemies) {
+                    enemy.drawEnemy(g);
+                }
+                drawShip(g);
+                repaint();
+            }
+            // this class is used to add more enemy ships to the screen
+            class SpawnHandler2 implements ActionListener {
+                // this class is called and adds ships to the screen if needed
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if(stage < 5) {
+                        EnemyShip lastShip = enemies.get(enemies.size()-1);
+                        if(lastShip.health == 0 && System.currentTimeMillis() - lastShip.deathDate >= 5000) {
+                            enemies.add(new EnemyShip());
+                            if(stage == 4) enemies.add(new EnemyShip());
+                            stage++;
+                        }
+                        repaint();
+                    }
+                }
+            }
+            // this class is used to update the position of the enemy
+            class ActHandler implements ActionListener {
+                // this method is used to call the act method of the enemies
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    for (EnemyShip enemy : enemies) enemy.act();
+                }
+            }
+            // method used to load the enterprise image
+            public Image getImage() {
+                return new ImageIcon("spaceship.png").getImage();
+            }
+            // method used to draw the enterprise on the screen
+            public void drawShip(Graphics g) {
+                // finding how many seconds passed since the last paintComponent
+                current = System.currentTimeMillis();
+                diff = ((double) current - previous)/1000;
+                // 125 degrees per second
+                if(lcount > 1) rotationDeg -= diff * 125;
+                if(rcount > 1) rotationDeg += diff * 125;
+                rotationDeg = rotationDeg % 360;
+                if(rotationDeg < 0) rotationDeg += 360;
+                if(ucount > 0) {
+                    // using the unit circle to move the ship
+                    velocityX += diff * 50 * Math.cos(Math.toRadians(rotationDeg-90));
+                    velocityY += diff * 50 * Math.sin(Math.toRadians(rotationDeg-90));
+                }
+                shipX += velocityX * diff;
+                shipY += velocityY * diff;
+                if(scount > 0) {
+                    double newVelX = velocityX * 5 * diff;
+                    double newVelY = velocityY * 5 * diff;
+                    velocityX -= newVelX;
+                    velocityY -= newVelY;
+                }
+                if(shipX > 865) shipX = 1;
+                else if(shipX < -65) shipX = 799;
+                if(shipY > 865) shipY = 1;
+                else if(shipY < -65) shipY = 799;
+                for (EnemyShip enemy : enemies) {
+                    if(enemy.enemyX > 865) enemy.enemyX = 1;
+                    else if(enemy.enemyX < -65) enemy.enemyX = 799;
+                    if(enemy.enemyY > 865) enemy.enemyY = 1;
+                    else if(enemy.enemyY < -65) enemy.enemyY = 799;
+                }
+                // drawing the image
+                if(playerHealth > 0) {
+                    try {
+                        Graphics2D g2d = (Graphics2D) g;
+                        g2d.rotate(Math.toRadians(rotationDeg), shipX + 15, shipY + 30);
+                        g2d.drawImage(getImage(), (int) shipX, (int) shipY, 30, 60, null);
+                        g2d.rotate(Math.toRadians(-rotationDeg), shipX + 15, shipY + 30);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                } else g.drawImage(explosion, (int)shipX, (int)shipY, 60, 60, null);
+                // updating the previous variable
+                previous = current;
+            }
+            // method used to update the location of the torpedoes
+            class TorpHandler implements ActionListener {
+                // method that calls the tick methods of the torpedoes to update coords
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    for (Torpedo torpedo1 : torpedoes) {
+                        torpedo1.tick(0.1);
+                    }
+                    for (Torpedo torpedo1 : torpedoes2) {
+                        torpedo1.tick(0.1);
+                    }
+                }
+            }
+            // This method is used to remove torpedoes that are off of the screen
+            public boolean removeTorpedoes() {
+                for (Torpedo torpedo1 : torpedoes) {
+                    if(torpedo1.x_coord < -20 || torpedo1.x_coord > 820 || torpedo1.y_coord < -20 || torpedo1.y_coord > 820) {
+                        torpedoes.remove(torpedo1);
+                        return true;
+                    }
+                }
+                return false;
+            }
+            // This method checks if a torpedo has hit the enemy
+            public boolean checkShot() {
+                for (Torpedo torpedo1 : torpedoes) {
+                    for (EnemyShip enemy : enemies) {
+                        double distX = torpedo1.x_coord - enemy.enemyX;
+                        double distY = torpedo1.y_coord - enemy.enemyY;
+                        double dist = Math.sqrt(Math.pow(distX, 2) + Math.pow(distY, 2));
+                        if(dist < 25 && enemy.health > 0) {
+                            torpedoes.remove(torpedo1);
+                            enemy.health -= 25;
+                            if(enemy.health == 0) {
+                                enemy.deathDate = System.currentTimeMillis();
+                                enemiesLeft--;
+                                if(enemiesLeft == 0) {
+                                    stopAll();
+                                    showPanel("win");
+                                }
+                            }
+                            return true;
+                        }
+                    }
+                }
+                for (Torpedo torpedo1 : torpedoes2) {
+                    double distX = torpedo1.x_coord - shipX;
+                    double distY = torpedo1.y_coord - shipY;
+                    double dist = Math.sqrt(Math.pow(distX, 2) + Math.pow(distY, 2));
+                    if(dist < 25) {
+                        torpedoes2.remove(torpedo1);
+                        playerHealth -= 25;
+                        if(playerHealth == 0) {
+                            stopAll();
+                            showPanel("lose");
+                        }
+                        return true;
+                    }
+                }
+                return false;
+            }
+            // this class is used to represent an enemy ship and contain all info needed to draw one
+            class EnemyShip {
+                double enemyX, enemyY;
+                double rot;
+                Image kgship;
+                int health = 100;
+                long lastShot;
+                long deathDate = -1;
+                // constructor to init coords of the enemy
+                public EnemyShip() {
+                    enemyX = (int)(Math.random() * 661) + 70;
+                    enemyY = (int)(Math.random() * 661) + 70;
+                    rot = (int)(Math.random() * 360);
+                    kgship = new ImageIcon("klingonship.png").getImage();
+                }
+                // method used to draw enemy on screen
+                public void drawEnemy(Graphics g) {
+                    long current = System.currentTimeMillis();
+                    try {
+                        Graphics2D g2d = (Graphics2D) g;
+                        g2d.rotate(Math.toRadians(rot), enemyX, enemyY);
+                        if(health > 0) g2d.drawImage(kgship, (int)enemyX - 35, (int)enemyY - 20, 70, 40, null);
+                        else if(health == 0 && current - deathDate < 5000) g2d.drawImage(explosion, (int)enemyX - 35, (int)enemyY - 20, 40, 40, null);
+                        g2d.rotate(Math.toRadians(-rot), enemyX, enemyY);
+                    } catch(Exception e) {
+                        throw new RuntimeException();
+                    }
+                }
+                // method used to update the coordinates + rotation of enemy and fire torpedoes
+                public void act() {
+                    long current = System.currentTimeMillis();
+                    if(health > 0) {
+                        double distX = shipX - enemyX;
+                        double distY = shipY - enemyY;
+                        double deg = Math.toDegrees(Math.atan2(distY, distX));
+                        if(Math.abs(rot - deg) <= 1) rot = deg;
+                        else if(rot > deg) rot--;
+                        else rot++;
+                        if(Math.sqrt(Math.pow(distX, 2) + Math.pow(distY, 2)) > 200) {
+                            enemyX += Math.cos(Math.toRadians(rot));
+                            enemyY += Math.sin(Math.toRadians(rot));
+                        }
+                        if(Math.abs(rot - deg) < 10 && current - lastShot >= 2000 && playerHealth > 0) {
+                            torpedoes2.add(new Torpedo(enemyX, enemyY, rot));
+                            lastShot = current;
+                        }
+                    }
+                }
+            }
+            // method that checks if the user shoots a torpedo
+            @Override
+            public void keyTyped(KeyEvent e) {
+                char key = e.getKeyChar();
+                if(key == 's' && playerHealth > 0) {
+                    double x1 = (shipX + 15) + 15 * Math.cos(Math.toRadians((rotationDeg - 90) + 45));
+                    double y1 = (shipY + 15) + 15 * Math.sin(Math.toRadians((rotationDeg - 90) + 45));
+                    torpedoes.add(new Torpedo(x1, y1, rotationDeg-90));
+                    double x2 = (shipX + 15) + 15 * Math.cos(Math.toRadians((rotationDeg - 90) - 45));
+                    double y2 = (shipY + 15) + 15 * Math.sin(Math.toRadians((rotationDeg - 90) - 45));
+                    torpedoes.add(new Torpedo(x2, y2, rotationDeg-90));
+                }
+                repaint();
+            }
+            // method used to check if the user presses a move key
+            @Override
+            public void keyPressed(KeyEvent e) {
+                int key = e.getKeyCode();
+                if(playerHealth > 0) {
+                    switch (key) {
+                        case KeyEvent.VK_UP -> ucount++;
+                        case KeyEvent.VK_LEFT -> lcount++;
+                        case KeyEvent.VK_RIGHT -> rcount++;
+                        case 32 -> scount++;
+                    }
+                }
+                repaint();
+            }
+            // method used to check if the user stops pressing a move key
+            @Override
+            public void keyReleased(KeyEvent e) {
+                int key = e.getKeyCode();
+                if(playerHealth > 0) {
+                    switch (key) {
+                        case KeyEvent.VK_UP -> ucount = 0;
+                        case KeyEvent.VK_LEFT -> lcount = 0;
+                        case KeyEvent.VK_RIGHT -> rcount = 0;
+                        case 32 -> scount = 0;
+                    }
+                }
+                repaint();
+            }
+        }
+        // This is the page the user is transported to if they win the space battle
+        class WinPanel extends JPanel {
+            public WinPanel() {
+                setBackground(Color.BLACK);
+            }
+            public void paintComponent(Graphics g) {
+                grabFocus();
+                super.paintComponent(g);
+                getSTF(35f);
+                g.setFont(stf);
+                g.setColor(GOLD);
+                g.drawString("You win!", 375, 400);
+            }
+        }
+        // This is the page the user is transported to if they lose the space battle
+        class LosePanel extends JPanel {
+            public LosePanel() {
+                setBackground(Color.BLACK);
+            }
+            public void paintComponent(Graphics g) {
+                grabFocus();
+                super.paintComponent(g);
+                getSTF(35f);
+                g.setFont(stf);
+                g.setColor(GOLD);
+                g.drawString("You lose!", 375, 400);
+            }
+        }
+        // This class contains all variables and methods required to draw a torpedo
+        class Torpedo {
+            double x_coord, y_coord;
+            double rotDeg;
+            // constructor to initialize coordinates of the torpedo
+            public Torpedo(double x_coord, double y_coord, double rotDeg) {
+                this.x_coord = x_coord;
+                this.y_coord = y_coord;
+                this.rotDeg = rotDeg;
+            }
+            // method called every 0.1 ms to update the loc of the torpedo
+            public void tick(double dt) {
+                x_coord += 100 * dt * Math.cos(Math.toRadians(rotDeg));
+                y_coord += 100 * dt * Math.sin(Math.toRadians(rotDeg));
+            }
+            // method used to draw the torpedo
+            public void drawTorpedo(Graphics g) {
+                try {
+                    Graphics2D g2d = (Graphics2D) g;
+                    g2d.rotate(Math.toRadians(rotDeg), x_coord, y_coord);
+                    g2d.drawImage(new ImageIcon("torpedo.png").getImage(), (int)x_coord - 10, (int)y_coord - 2, 20, 4, null);
+                    g2d.rotate(Math.toRadians(-rotDeg), x_coord, y_coord);
+                } catch(Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+        public void showPanel(String name) {
+            cl3.show(this, name);
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            if(instructions) {
+                cl3.next(this);
+                sb.initialize();
+                instructions = false;
+            }
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+
+        }
+    }
     // This class contains all the information needed to create particles such as powerups, and later on, blood and guts
     class Particle {
         double posX, posY, velX, velY;
         int type;
         // type = 0: blood, type = 1: organ, type = 2: recharge, type = 3: freeze
         boolean gravity;
-        // This constructor is used to randomly initialize the location and type of particle
+        // This constructor is used to randomly initialize the location and type of particle (recharge or freeze)
         public Particle() {
-            posX = (int)(Math.random() * 761) + 20;
-            posY = 30;
+            posX = (int)(Math.random()*686) + 25;
+            posY = 60;
             velX = 0;
             velY = 10;
             gravity = true;
