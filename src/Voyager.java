@@ -3,7 +3,7 @@ Vishnu Bharadwaj
 4/28/24
 Voyager.java
 This is my game, Voyager. It is a game based off of the Star Trek Original Series that uses all of my java knowledge in
-a fun game. Currently, I have finished the homepage and level 1 gameplay, I am working on level 2.
+a fun game. Currently, I have finished level 2 and am working on level 3 + JoeTTS.
 */
 
 import javax.swing.*; import java.awt.*;
@@ -742,12 +742,13 @@ class VPanel extends JPanel {
                 getSTF(35f);
                 g.drawString("PRESS SPACE TO CONTINUE", 200, 700);
             }
-
+            // this method is called whenever the user types a key on the SWin panel (currently empty)
             @Override
             public void keyTyped(KeyEvent e) {
 
             }
-
+            // this method is called whenever the user presses a key, and if they press the space key it goes to the
+            // level 2 panel
             @Override
             public void keyPressed(KeyEvent e) {
                 int keycode = e.getKeyCode();
@@ -756,7 +757,7 @@ class VPanel extends JPanel {
                     nextPanel();
                 }
             }
-
+            // this method is called whenever the user releases a key on the SWin panel (currently empty)
             @Override
             public void keyReleased(KeyEvent e) {
 
@@ -815,16 +816,17 @@ class VPanel extends JPanel {
         CardLayout cl3;
         SpaceBattle sb;
         boolean instructions = true;
+        // this is the constructor for the level 2 panel which sets the layout, adds listeners, and starts star timer
         public Level2() {
             cl3 = new CardLayout();
             setLayout(cl3);
-//            addKeyListener(this);
             addMouseListener(this);
             run3();
             StarHandler sh = new StarHandler();
             starTimer = new Timer(10, sh);
             starTimer.start();
         }
+        // this method is used to create JPanels for the instructions page, game page, and winning/losing page
         public void run3() {
             Instructions is = new Instructions();
             sb = new SpaceBattle();
@@ -835,15 +837,18 @@ class VPanel extends JPanel {
             add(wp, "win");
             add(lp, "lose");
         }
+        // this is the pC of the level 2 class which sets the background and grabs the focus of the user
         public void paintComponent(Graphics g) {
             grabFocus();
             super.paintComponent(g);
         }
         // This is the instructions panel which teaches the user how to steer their ship and fire torpedoes.
         class Instructions extends JPanel {
+            // This is the constructor of the instructions panel which sets the background
             public Instructions() {
                 setBackground(Color.BLACK);
             }
+            // this is the pC of the instructions panel which draws instructions for playing level 2
             public void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 long current = System.currentTimeMillis();
@@ -909,13 +914,13 @@ class VPanel extends JPanel {
                 explosion = new ImageIcon("explosion.png").getImage();
                 spawnTimer2 = new Timer(10, new SpawnHandler2());
             }
-            // This method is used to start the timers
+            // This method is used to start the timers and is called when the user switches to the panel
             public void initialize() {
                 torpTimer.start();
                 actTimer.start();
                 spawnTimer2.start();
             }
-            // This method is used to stop the timers
+            // This method is used to stop the timers once the user wins/loses
             public void stopAll() {
                 torpTimer.stop();
                 actTimer.stop();
@@ -952,7 +957,7 @@ class VPanel extends JPanel {
             }
             // this class is used to add more enemy ships to the screen
             class SpawnHandler2 implements ActionListener {
-                // this class is called and adds ships to the screen if needed
+                // this method is called and adds ships to the screen if needed
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if(stage < 5) {
@@ -968,17 +973,17 @@ class VPanel extends JPanel {
             }
             // this class is used to update the position of the enemy
             class ActHandler implements ActionListener {
-                // this method is used to call the act method of the enemies
+                // this method is used to call the act method of the enemies which updates the coordinates of the enemy
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     for (EnemyShip enemy : enemies) enemy.act();
                 }
             }
-            // method used to load the enterprise image
+            // this method is used to load an image of the USS Enterprise
             public Image getImage() {
                 return new ImageIcon("spaceship.png").getImage();
             }
-            // method used to draw the enterprise on the screen
+            // This method is used to update the position of the user and draw the enterprise on the screen
             public void drawShip(Graphics g) {
                 // finding how many seconds passed since the last paintComponent
                 current = System.currentTimeMillis();
@@ -1048,7 +1053,7 @@ class VPanel extends JPanel {
                 }
                 return false;
             }
-            // This method checks if a torpedo has hit the enemy
+            // This method checks if a torpedo has hit the enemy using Euclidean distance
             public boolean checkShot() {
                 for (Torpedo torpedo1 : torpedoes) {
                     for (EnemyShip enemy : enemies) {
@@ -1094,7 +1099,7 @@ class VPanel extends JPanel {
                 int health = 100;
                 long lastShot;
                 long deathDate = -1;
-                // constructor to init coords of the enemy
+                // this constructor randomly initializes the coordinates and rotation of the enemy ship
                 public EnemyShip() {
                     enemyX = (int)(Math.random() * 661) + 70;
                     enemyY = (int)(Math.random() * 661) + 70;
@@ -1114,7 +1119,8 @@ class VPanel extends JPanel {
                         throw new RuntimeException();
                     }
                 }
-                // method used to update the coordinates + rotation of enemy and fire torpedoes
+                // method used to update the coordinates + rotation of enemy and fire torpedoes based on the positon of
+                // the user
                 public void act() {
                     long current = System.currentTimeMillis();
                     if(health > 0) {
@@ -1135,7 +1141,7 @@ class VPanel extends JPanel {
                     }
                 }
             }
-            // method that checks if the user shoots a torpedo
+            // method that checks if the user presses 's' and shoots a torpedo if necessary
             @Override
             public void keyTyped(KeyEvent e) {
                 char key = e.getKeyChar();
@@ -1149,7 +1155,7 @@ class VPanel extends JPanel {
                 }
                 repaint();
             }
-            // method used to check if the user presses a move key
+            // method used to check if the user presses an arrow key and if so updates the position of the user
             @Override
             public void keyPressed(KeyEvent e) {
                 int key = e.getKeyCode();
@@ -1163,7 +1169,7 @@ class VPanel extends JPanel {
                 }
                 repaint();
             }
-            // method used to check if the user stops pressing a move key
+            // method used to check if the user stops pressing an arrow key, stopping user movement
             @Override
             public void keyReleased(KeyEvent e) {
                 int key = e.getKeyCode();
@@ -1180,9 +1186,11 @@ class VPanel extends JPanel {
         }
         // This is the page the user is transported to if they win the space battle
         class WinPanel extends JPanel {
+            // this is the constructor of the win panel which sets the background to black
             public WinPanel() {
                 setBackground(Color.BLACK);
             }
+            // this is the pC of the win panel which displays the text "You win!" in STF
             public void paintComponent(Graphics g) {
                 grabFocus();
                 super.paintComponent(g);
@@ -1194,9 +1202,11 @@ class VPanel extends JPanel {
         }
         // This is the page the user is transported to if they lose the space battle
         class LosePanel extends JPanel {
+            // this is the constructor of the lose panel which sets the background to black
             public LosePanel() {
                 setBackground(Color.BLACK);
             }
+            // this is the pC of the lose panel which displays the text "You win!" in STF
             public void paintComponent(Graphics g) {
                 grabFocus();
                 super.paintComponent(g);
@@ -1210,18 +1220,18 @@ class VPanel extends JPanel {
         class Torpedo {
             double x_coord, y_coord;
             double rotDeg;
-            // constructor to initialize coordinates of the torpedo
+            // constructor to initialize coordinates and rotation of the torpedo
             public Torpedo(double x_coord, double y_coord, double rotDeg) {
                 this.x_coord = x_coord;
                 this.y_coord = y_coord;
                 this.rotDeg = rotDeg;
             }
-            // method called every 0.1 ms to update the loc of the torpedo
+            // method called every 0.1 ms to update the location of the torpedo
             public void tick(double dt) {
                 x_coord += 100 * dt * Math.cos(Math.toRadians(rotDeg));
                 y_coord += 100 * dt * Math.sin(Math.toRadians(rotDeg));
             }
-            // method used to draw the torpedo
+            // method used to draw the torpedo on the screen
             public void drawTorpedo(Graphics g) {
                 try {
                     Graphics2D g2d = (Graphics2D) g;
@@ -1233,16 +1243,16 @@ class VPanel extends JPanel {
                 }
             }
         }
-
+        // this method is used to show a specific level 2 panel (either win or lose)
         public void showPanel(String name) {
             cl3.show(this, name);
         }
-
+        // this method is called whenever the user clicks their mouse (currently empty)
         @Override
         public void mouseClicked(MouseEvent e) {
 
         }
-
+        // this method is used to transport the user to the game page after they have read the instructions
         @Override
         public void mousePressed(MouseEvent e) {
             if(instructions) {
@@ -1251,17 +1261,17 @@ class VPanel extends JPanel {
                 instructions = false;
             }
         }
-
+        // this method is called whenever the user releases their mouse (currently empty)
         @Override
         public void mouseReleased(MouseEvent e) {
 
         }
-
+        // this method is called whenever the user's mouse enters the screen (currently empty)
         @Override
         public void mouseEntered(MouseEvent e) {
 
         }
-
+        // this method is called whenever the user's mouse exits the screen (currently empty)
         @Override
         public void mouseExited(MouseEvent e) {
 
