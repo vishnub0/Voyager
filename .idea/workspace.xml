@@ -4,8 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d1f9dac9-a79b-4d11-9c6b-c41999fb9530" name="Changes" comment="Level 2 completed">
+    <list default="true" id="d1f9dac9-a79b-4d11-9c6b-c41999fb9530" name="Changes" comment="added comments to level 2 code">
+      <change afterPath="$PROJECT_DIR$/src/Frame.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/SaveFile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Processor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Processor.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Voyager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Voyager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/transcript.txt" beforeDir="false" afterPath="$PROJECT_DIR$/transcript.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -113,7 +118,15 @@
       <option name="project" value="LOCAL" />
       <updated>1715658723395</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="added comments to level 2 code">
+      <option name="closed" value="true" />
+      <created>1715659896247</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1715659896247</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -133,7 +146,8 @@
     <MESSAGE value="Level 1 done except for particles and power ups" />
     <MESSAGE value="Level 1 completed" />
     <MESSAGE value="Level 2 completed" />
-    <option name="LAST_COMMIT_MESSAGE" value="Level 2 completed" />
+    <MESSAGE value="added comments to level 2 code" />
+    <option name="LAST_COMMIT_MESSAGE" value="added comments to level 2 code" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Star_Trek$Voyager.ic" NAME="Voyager Coverage Results" MODIFIED="1715580951743" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />

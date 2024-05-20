@@ -1,4 +1,4 @@
-wav1|The sun sets behind the mountains, painting the sky with hues of orange and purple.
+﻿wav1|﻿The sun sets behind the mountains, painting the sky with hues of orange and purple.
 wav2|Birds chirp cheerfully in the early morning, welcoming the dawn.
 wav3|Waves crash against the shore, creating a soothing rhythm.
 wav4|Leaves rustle in the gentle breeze, whispering secrets of the forest.
@@ -522,7 +522,7 @@ wav521|The study of cosmic rays provides insights into the high-energy particles
 wav522|Space habitats could provide a solution to the challenges of long-duration space travel.
 wav523|The study of space weather seeks to understand the effects of solar activity on Earth's atmosphere and technology.
 wav524|The concept of a Dyson sphere involves surrounding a star with a shell of solar panels to capture its energy.
-wav525|Star Trek: The Original Series debuted in 1966.
+wav525|Star Trek: The Original Series debuted in nineteen sixty six.
 wav526|Captain James T. Kirk leads the crew of the starship USS Enterprise.
 wav527|Spock, the half-human, half-Vulcan science officer, serves as Kirk's trusted advisor.
 wav528|Dr. Leonard "Bones" McCoy is the ship's chief medical officer, known for his colorful metaphors.
@@ -543,7 +543,7 @@ wav542|Phaser weapons are standard issue for Starfleet officers, capable of stun
 wav543|Tricorders are handheld devices used for scanning and data analysis.
 wav544|The iconic red, blue, and gold uniforms differentiate between command, science, and operations personnel.
 wav545|The series is known for its memorable characters, imaginative storytelling, and pioneering special effects.
-wav546|The original series aired for three seasons before being canceled in 1969.
+wav546|The original series aired for three seasons before being canceled in nineteen sixty nine.
 wav547|Despite its short run, Star Trek developed a dedicated fanbase and became a cultural phenomenon.
 wav548|The series inspired numerous spin-offs, movies, books, and other media.
 wav549|Captain Kirk's catchphrase, "Beam me up, Scotty," has become synonymous with the series.

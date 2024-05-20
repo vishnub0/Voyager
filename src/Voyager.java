@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import java.io.File;
+import java.util.Random;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -51,13 +52,13 @@ class VPanel extends JPanel {
     Clip clip;
     Homepage homepage;
     Level1 level1;
+    public static SaveFile sf = SaveFile.load();
     // This is the constructor which sets the background and layout of the VPanel. It also calls the run method.
     public VPanel() {
         setBackground(Color.BLACK);
         cl = new CardLayout();
         setLayout(cl);
         run();
-
     }
     // This is the paintComponent method of the VPanel which changes the background color by calling the parent's pC.
     public void paintComponent(Graphics g) {
@@ -167,7 +168,7 @@ class VPanel extends JPanel {
             LetHandler lh = new LetHandler();
             Timer letTimer = new Timer(10 , lh);
             letTimer.start();
-            playMusic("theme.wav", true);
+            //playMusic("theme.wav", true);
         }
         // This is the pC for homepage which draws all the components of the homepage along with updating ArrayLists.
         public void paintComponent(Graphics g) {
@@ -227,7 +228,7 @@ class VPanel extends JPanel {
         public void mousePressed(MouseEvent e) {
             if(hovering) {
                 starTimer.stop();
-                clip.stop();
+                //clip.stop();
                 nextPanel();
             }
         }
@@ -405,7 +406,12 @@ class VPanel extends JPanel {
                 while(checkShot()){}
                 while(removeLasers()){}
                 while(removeParticles()){}
+                while(removeEnemies()){}
                 for(Enemy e : enemies) e.drawEnemy(g);
+                for (Particle particle : particles) {
+                    g.setColor(new Color(136, 8, 8));
+                    g.fillOval((int)particle.posX, (int)particle.posY, 5, 5);
+                }
                 for(Laser laser : lasers) laser.drawLaser(g);
                 g.setFont(stf);
                 g.setColor(GOLD);
@@ -453,18 +459,20 @@ class VPanel extends JPanel {
                             e.shot = true;
                             lasers.remove(l);
                             if(superCharge < 10) superCharge++;
-                            /* blood particles, currently not being used
+                            Random rand = new Random();
                             for(int i = 0; i < (int)(Math.random()*101) + 50; i++) {
                                 boolean bloody = (int)(Math.random()*10) + 1 > 3;
-                                particles.add(new Particle(e, bloody));
-                            }*/
+                                double vel1 = rand.nextDouble(20) - 10;
+                                double vel2 = rand.nextDouble(20) - 10;
+                                particles.add(new Particle(e.x_coord, e.y_coord, vel1, vel2, bloody)); // FIXME: fix centering of particle once final sprite is being used
+                            }
                             return true;
                         }
                     }
                     for(Particle p : particles) {
-                        if(p.isColliding(l.x, l.y)) {
+                        if(p.isColliding(l.x, l.y) && (p.type == 2 || p.type == 3)) {
                             if(p.type == 2) numShots = 7;
-                            else if(p.type == 3) {
+                            else {
                                 frozen = true;
                                 freezeTimer.start();
                             }
@@ -550,6 +558,13 @@ class VPanel extends JPanel {
                 if(keycode == 83 && superCharge == 10) {
                     for(Enemy enemy : enemies) {
                         enemy.shot = true;
+                        Random rand = new Random();
+                        for(int i = 0; i < (int)(Math.random()*101) + 50; i++) {
+                            boolean bloody = (int)(Math.random()*10) + 1 > 3;
+                            double vel1 = rand.nextDouble(20) - 10;
+                            double vel2 = rand.nextDouble(20) - 10;
+                            particles.add(new Particle(enemy.x_coord, enemy.y_coord, vel1, vel2, bloody)); // FIXME: fix centering of particle once final sprite is being used
+                        }
                     }
                     superCharge = 0;
                     repaint();
@@ -620,6 +635,16 @@ class VPanel extends JPanel {
                 for(Particle p : particles) {
                     if(p.posX < -20 || p.posX > 820 || p.posY < -20 || p.posY > 820) {
                         particles.remove(p);
+                        return true;
+                    }
+                }
+                return false;
+            }
+            // method used to remove enemies that have been on the screen for longer than 10 seconds
+            public boolean removeEnemies() {
+                for (Enemy enemy : enemies) {
+                    if(enemy.shot && enemy.timeShot > 0 && System.currentTimeMillis() - enemy.timeShot > 10000) {
+                        enemies.remove(enemy);
                         return true;
                     }
                 }
@@ -755,6 +780,8 @@ class VPanel extends JPanel {
                 System.out.println(keycode);
                 if(keycode == 32) {
                     nextPanel();
+                    sf.level = 2;
+                    sf.save();
                 }
             }
             // this method is called whenever the user releases a key on the SWin panel (currently empty)
@@ -1288,9 +1315,29 @@ class VPanel extends JPanel {
             posX = (int)(Math.random()*686) + 25;
             posY = 60;
             velX = 0;
-            velY = 10;
+            velY = 30;
             gravity = true;
             type = (int)(Math.random() * 2) + 2;
+        }
+        // constructor for a moving blood/organ particle
+        public Particle(double posX, double posY, double velX, double velY, boolean isBlood) {
+            this.posX = posX;
+            this.posY = posY;
+            this.velX = velX;
+            this.velY = velY;
+            if(isBlood) this.type = 0;
+            else this.type = 1;
+            this.gravity = true;
+        }
+        // constructor for blood/organ particles that aren't moving
+        public Particle(double posX, double posY, boolean isBlood) {
+            this.posX = posX;
+            this.posY = posY;
+            if(isBlood) this.type = 0;
+            else this.type = 1;
+            this.velX = 0;
+            this.velY = 0;
+            this.gravity = false;
         }
         // This method is used to check if anything collides with the particle
         public boolean isColliding(double positionX, double positionY) {
@@ -1301,8 +1348,8 @@ class VPanel extends JPanel {
         // This method is used to update the x and y coordinates of the particle, taking gravity into account
         public void tick(double dt) {
             posX += velX * dt;
-            posY += velX * dt;
-            if(gravity) posY += 1;
+            posY += velY * dt;
+            if(gravity) velY += 1;
         }
     }
 }

@@ -3,30 +3,30 @@ import java.util.ArrayList;
 import java.io.File; import java.io.PrintWriter;
 import java.util.Scanner;
 public class Processor {
-    Scanner input; PrintWriter pw;
+    Scanner input;
     public static void main(String[] args) {
         Processor p = new Processor();
         p.run();
     }
     public void run() {
+        String chars = "";
         tryCatchIt();
         ArrayList<String> sentences = new ArrayList<>();
         while(input.hasNext()) {
             sentences.add(input.nextLine());
         }
         input.close();
-        for (int i = 1; i <= sentences.size(); i++) {
-            String sent = sentences.get(i-1);
-            String text = "wav" + i + "|" + sent.substring(sent.indexOf('\t') + 1);
-            System.out.println(text);
-            pw.println(text);
+        for (String sentence : sentences) {
+            for(int i = 0; i < sentence.length(); i++) {
+                char c = sentence.charAt(i);
+                if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) && !chars.contains("" + c)) chars += c;
+            }
         }
-        pw.close();
+        System.out.println(chars);
     }
     public void tryCatchIt() {
         try {
-            input = new Scanner(new File("sentences_unprocessed.txt"));
-            pw = new PrintWriter(new File("transcript.txt"));
+            input = new Scanner(new File("transcript.txt"));
         } catch(Exception e) {
             System.exit(1);
         }
