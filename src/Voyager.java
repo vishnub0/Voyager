@@ -8,10 +8,9 @@ a fun game. Currently, I have finished level 2 and am working on level 3 + JoeTT
 
 import javax.swing.*; import java.awt.*;
 import java.awt.event.*;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 
-import java.io.File;
 import java.util.Random;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -66,6 +65,8 @@ class VPanel extends JPanel {
     }
     // This is the run method which creates Panels for each of the levels and adds them to the VPanel.
     public void run() {
+        Scene1 sc1 = new Scene1();
+        add(sc1);
         homepage = new Homepage();
         homepage.setBackground(Color.BLACK);
         add(homepage, "homepage");
@@ -73,8 +74,6 @@ class VPanel extends JPanel {
         add(level1, "l1");
         Level2 level2 = new Level2();
         add(level2, "l2");
-        JPanel level3 = new JPanel();
-        add(level3, "l3");
     }
     // This class represents a star in my background. It has all the variables and methods needed to draw the star.
     class Star {
@@ -142,6 +141,37 @@ class VPanel extends JPanel {
             throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+    // This is the JPanel for the first scene (Joe Bob Kirk's monologue)
+    class Scene1 extends JPanel {
+        long creation = System.currentTimeMillis();
+        Timer repTimer;
+        // This is the constructor of the first scene which plays the monologue
+        public Scene1() {
+            setBackground(Color.BLACK);
+            playMusic("finalfrontier.wav", false);
+            repTimer = new Timer(10, i -> repaint());
+            repTimer.start();
+        }
+        // This is the pC of the first scene which displays the text that JoeTTS is saying
+        public void paintComponent(Graphics g) {
+            long current = System.currentTimeMillis();
+            getSTF(25f);
+            g.setFont(stf);
+            g.setColor(GOLD);
+            g.drawString("Space, the final frontier.", 150, 400);
+            g.drawString("These are the voyages of the starship enterprise.", 150, 430);
+            g.drawString("Its continuing mission, to explore strange new worlds.", 150, 460);
+            g.drawString("To seek out new life and new civilizations.", 150, 490);
+            g.drawString("- Captain Kirk", 275, 600);
+            getSTF(35f);
+            g.setFont(stf);
+            g.drawString("To boldly go where no man has gone before.", 150, 550);
+            if(current - creation > 21000) {
+                repTimer.stop();
+                nextPanel();
+            }
         }
     }
     // This is the JPanel for the homepage, and contains all the methods and variables to draw the homepage.
@@ -971,6 +1001,8 @@ class VPanel extends JPanel {
                 g.drawString("HP:", 10, 40);
                 g.drawString("Enemies left: " + enemiesLeft, 320, 40);
                 g.setColor(Color.RED);
+                g.drawRect(50, 20, 250, 20);
+                for(int i = 0; i <= 250; i += 25) g.drawLine(50 + i, 20, 50 + i, 40);
                 g.fillRect(50, 20, playerHealth, 20);
                 while(removeTorpedoes()){}
                 while(checkShot());
@@ -1350,6 +1382,36 @@ class VPanel extends JPanel {
             posX += velX * dt;
             posY += velY * dt;
             if(gravity) velY += 1;
+        }
+    }
+}
+
+class SaveFile implements Serializable {
+    int level;
+
+    public SaveFile(int level) {
+        this.level = level;
+    }
+    public void save() {
+        try {
+            FileOutputStream f = new FileOutputStream("saveFile.ser");
+            ObjectOutputStream oos = new ObjectOutputStream(f);
+            oos.writeObject(this);
+        } catch(IOException e) {
+            System.exit(1);
+        }
+    }
+    public static SaveFile load() {
+        FileInputStream f = null;
+        try {
+            f = new FileInputStream("saveFile.ser");
+            ObjectInputStream ois = new ObjectInputStream(f);
+            SaveFile sf = (SaveFile) ois.readObject();
+            return sf;
+        } catch (IOException | ClassNotFoundException e) {
+            SaveFile sf = new SaveFile(1);
+            sf.save();
+            return sf;
         }
     }
 }

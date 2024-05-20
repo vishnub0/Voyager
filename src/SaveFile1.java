@@ -1,9 +1,9 @@
 import java.io.*;
 
-public class SaveFile implements Serializable {
+public class SaveFile1 implements Serializable {
     int level;
 
-    public SaveFile(int level) {
+    public SaveFile1(int level) {
         this.level = level;
     }
     public void save() {
