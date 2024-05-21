@@ -42,6 +42,8 @@ class VPanel extends JPanel {
     CardLayout cl;
     Font stf;
     final Color GOLD = new Color(211, 142, 38);
+    final Color GOLD2 = new Color(238, 167, 59);
+    final Color CERULEAN = new Color(42,82,190);
     ArrayList<Star> stars = new ArrayList<>();
     Timer starTimer;
     Image logo = new ImageIcon("voyager-logo.png").getImage();
@@ -65,11 +67,13 @@ class VPanel extends JPanel {
     }
     // This is the run method which creates Panels for each of the levels and adds them to the VPanel.
     public void run() {
-        Scene1 sc1 = new Scene1();
-        add(sc1);
+        //Scene1 sc1 = new Scene1();
+        //add(sc1);
         homepage = new Homepage();
         homepage.setBackground(Color.BLACK);
         add(homepage, "homepage");
+        Levels levels = new Levels();
+        add(levels, "levels");
         level1 = new Level1();
         add(level1, "l1");
         Level2 level2 = new Level2();
@@ -114,6 +118,10 @@ class VPanel extends JPanel {
     // This method is used to change which Card is being displayed on the VPanel. It switches to the next card in cl.
     public void nextPanel() {
         cl.next(this);
+    }
+    // This method is used by the levels panel to show a certain panel in the CardLayout
+    public void showPanel(String name) {
+        cl.show(this, name);
     }
     // This method is used to play an audio file (filename), and loops it if the parameter loop is true
     public void playMusic(String filename, boolean loop) {
@@ -289,6 +297,77 @@ class VPanel extends JPanel {
             int mouseY = e.getX();
             hovering = mouseX >= 373 && mouseX <= 478 && mouseY >= 30 && mouseY <= 565;
             repaint();
+        }
+    }
+    // This is the JPanel used to select the level to play, contains everything required to draw it
+    class Levels extends JPanel implements MouseListener, MouseMotionListener {
+        Image lock = new ImageIcon("lock.png").getImage();
+        Color levColor1 = GOLD, levColor2 = GOLD;
+        // Constructor used to set background of level page and add mouse listener
+        public Levels() {
+            setBackground(Color.BLACK);
+            addMouseListener(this);
+            addMouseMotionListener(this);
+        }
+        // pC used to draw all the text and level options on the screen
+        public void paintComponent(Graphics g) {
+            grabFocus();
+            super.paintComponent(g);
+            getSTF(125f);
+            g.setFont(stf);
+            g.setColor(GOLD);
+            g.drawString("LEVELS", 250, 130);
+            int level = sf.level;
+            g.setColor(CERULEAN);
+            g.fillRect(150, 300, 150, 150);
+            g.fillRect(500, 300, 150, 150);
+            g.setColor(levColor1);
+            g.drawString("1", 200, 430);
+            g.setColor(levColor2);
+            g.drawString("2", 550, 430);
+            if(level < 2) g.drawImage(lock, 500, 300, 150, 150, null);
+        }
+        @Override
+        public void mouseClicked(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            int x_coord = e.getX();
+            int y_coord = e.getY();
+            if(x_coord >= 150 && x_coord <= 300 && y_coord >= 300 && y_coord <= 450) showPanel("l1");
+            else if(x_coord >= 500 && x_coord <= 650 && y_coord >= 300 && y_coord <= 450 && sf.level >= 2) showPanel("l2");
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseDragged(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseMoved(MouseEvent e) {
+            int x_coord = e.getX();
+            int y_coord = e.getY();
+            if(x_coord >= 150 && x_coord <= 300 && y_coord >= 300 && y_coord <= 450) levColor1 = GOLD2;
+            else levColor1 = GOLD;
+            if(x_coord >= 500 && x_coord <= 650 && y_coord >= 300 && y_coord <= 450 && sf.level >= 2) levColor2 = GOLD2;
+            else levColor2 = GOLD;
         }
     }
     // This is the JPanel for the level 1, and contains all the methods and variables to draw the first level.
@@ -807,7 +886,6 @@ class VPanel extends JPanel {
             @Override
             public void keyPressed(KeyEvent e) {
                 int keycode = e.getKeyCode();
-                System.out.println(keycode);
                 if(keycode == 32) {
                     nextPanel();
                     sf.level = 2;
@@ -1006,6 +1084,7 @@ class VPanel extends JPanel {
                 g.fillRect(50, 20, playerHealth, 20);
                 while(removeTorpedoes()){}
                 while(checkShot());
+                crash();
                 for (Torpedo torpedo1 : torpedoes) torpedo1.drawTorpedo(g);
                 for (Torpedo torpedo1 : torpedoes2) torpedo1.drawTorpedo(g);
                 for (EnemyShip enemy : enemies) {
@@ -1149,6 +1228,23 @@ class VPanel extends JPanel {
                     }
                 }
                 return false;
+            }
+            // This method checks if the player crashes into the enemy
+            public void crash() {
+                for (EnemyShip enemy : enemies) {
+                    double distX = (shipX + 15) - enemy.enemyX;
+                    double distY = (shipY + 30) - enemy.enemyY;
+                    double dist = Math.sqrt(Math.pow(distX, 2) + Math.pow(distY, 2));
+                    if(dist < 30 && enemy.health > 0) {
+                        enemy.health = 0;
+                        enemy.deathDate = System.currentTimeMillis();
+                        enemiesLeft--;
+                        playerHealth = 0;
+                        stopAll();
+                        showPanel("lose");
+                        break;
+                    }
+                }
             }
             // this class is used to represent an enemy ship and contain all info needed to draw one
             class EnemyShip {
@@ -1386,12 +1482,14 @@ class VPanel extends JPanel {
     }
 }
 
+// this class is used to save the level the user is on (currently not being used)
 class SaveFile implements Serializable {
     int level;
-
+    // this constructor is used to create a SaveFile object and set the level of the object
     public SaveFile(int level) {
         this.level = level;
     }
+    // This method uses FileInputStreams in order to this class as a .ser file, it is called whenever the user's level changes
     public void save() {
         try {
             FileOutputStream f = new FileOutputStream("saveFile.ser");
@@ -1401,6 +1499,8 @@ class SaveFile implements Serializable {
             System.exit(1);
         }
     }
+    // this method is called at the beginning of the program to check if the user has already played the game by reading
+    // the .ser file. If the user hasn't played the game before, it creates a .ser file for them
     public static SaveFile load() {
         FileInputStream f = null;
         try {
