@@ -4,9 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d1f9dac9-a79b-4d11-9c6b-c41999fb9530" name="Changes" comment="JoeTTS!!!!!!!!!!!!!!!">
+    <list default="true" id="d1f9dac9-a79b-4d11-9c6b-c41999fb9530" name="Changes" comment="Saving levels and level select page">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/saveFile.ser" beforeDir="false" afterPath="$PROJECT_DIR$/saveFile.ser" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Voyager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Voyager.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -139,7 +138,15 @@
       <option name="project" value="LOCAL" />
       <updated>1716179737990</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Saving levels and level select page">
+      <option name="closed" value="true" />
+      <created>1716270663795</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1716270663795</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -162,7 +169,8 @@
     <MESSAGE value="added comments to level 2 code" />
     <MESSAGE value="added blood" />
     <MESSAGE value="JoeTTS!!!!!!!!!!!!!!!" />
-    <option name="LAST_COMMIT_MESSAGE" value="JoeTTS!!!!!!!!!!!!!!!" />
+    <MESSAGE value="Saving levels and level select page" />
+    <option name="LAST_COMMIT_MESSAGE" value="Saving levels and level select page" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Star_Trek$Voyager.ic" NAME="Voyager Coverage Results" MODIFIED="1715580951743" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />

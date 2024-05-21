@@ -43,7 +43,7 @@ class VPanel extends JPanel {
     Font stf;
     final Color GOLD = new Color(211, 142, 38);
     final Color GOLD2 = new Color(238, 167, 59);
-    final Color CERULEAN = new Color(42,82,190);
+    final Color SILVER = new Color(192,192,192);
     ArrayList<Star> stars = new ArrayList<>();
     Timer starTimer;
     Image logo = new ImageIcon("voyager-logo.png").getImage();
@@ -318,7 +318,7 @@ class VPanel extends JPanel {
             g.setColor(GOLD);
             g.drawString("LEVELS", 250, 130);
             int level = sf.level;
-            g.setColor(CERULEAN);
+            g.setColor(SILVER);
             g.fillRect(150, 300, 150, 150);
             g.fillRect(500, 300, 150, 150);
             g.setColor(levColor1);
@@ -371,15 +371,17 @@ class VPanel extends JPanel {
         }
     }
     // This is the JPanel for the level 1, and contains all the methods and variables to draw the first level.
-    class Level1 extends JPanel implements MouseListener {
+    class Level1 extends JPanel implements MouseListener, MouseMotionListener {
         CardLayout cl2;
         boolean instructions = true;
         Shooter shooter;
+        Color nextColor = GOLD;
         // This is the constructor which sets the layout and calls the run2 method in order to create the JPanels.
         public Level1() {
             cl2 = new CardLayout();
             setLayout(cl2);
             addMouseListener(this);
+            addMouseMotionListener(this);
             run2();
         }
         // This is the run2 method which creates the instructions page, page for the game, and the win/lose pages
@@ -399,6 +401,7 @@ class VPanel extends JPanel {
             grabFocus();
             super.paintComponent(g);
         }
+
         // This is the class for the instructions which draws the instruction panel for level 1
         class Instructions extends JPanel {
             // This is the constructor of the Instructions page which sets the background to black
@@ -432,9 +435,12 @@ class VPanel extends JPanel {
                 g.drawString("up your super move (kills all", 85, 635);
                 g.drawString("enemies on screen).", 85, 670);
                 g.drawString("Type 's' to use.", 85, 705);
+                g.setColor(SILVER);
+                g.fillRect(660, 650, 100, 60);
                 getSTF(40f);
-                g.drawString("Press mouse to", 600, 700);
-                g.drawString("go to game", 600, 740);
+                g.setFont(stf);
+                g.setColor(nextColor);
+                g.drawString("NEXT", 675, 700);
                 g.setColor(Color.RED);
                 g.fillRect(50, 450, 140, 20);
                 g.setColor(new Color(136, 8, 8));
@@ -924,7 +930,9 @@ class VPanel extends JPanel {
         // This is the method called whenever the mouse is pressed and goes to the next panel in the layout.
         @Override
         public void mousePressed(MouseEvent e) {
-            if(instructions) {
+            int x_coord = e.getX();
+            int y_coord = e.getY();
+            if(instructions && x_coord >= 660 && x_coord <= 760 && y_coord >= 650 && y_coord <= 710) {
                 cl2.next(this);
                 shooter.__init__();
                 instructions = false;
@@ -945,17 +953,34 @@ class VPanel extends JPanel {
         public void mouseExited(MouseEvent e) {
 
         }
+        // this method is called whenever the user drags their mouse on the screen (currently not being used)
+        @Override
+        public void mouseDragged(MouseEvent e) {
+
+        }
+        // this method is called in order to check if the user moves their mouse over the next button (color change)
+        // TODO: check if the user is hovering over the next button
+        @Override
+        public void mouseMoved(MouseEvent e) {
+            int x_coord = e.getX();
+            int y_coord = e.getY();
+            if(instructions && x_coord >= 660 && x_coord <= 760 && y_coord >= 650 && y_coord <= 710) nextColor = GOLD2;
+            else nextColor = GOLD;
+            repaint();
+        }
     }
     // This is the JPanel for the second level and contains all the methods and variables to draw the level.
-    class Level2 extends JPanel implements MouseListener {
+    class Level2 extends JPanel implements MouseListener, MouseMotionListener {
         CardLayout cl3;
         SpaceBattle sb;
         boolean instructions = true;
+        Color nextColor = GOLD;
         // this is the constructor for the level 2 panel which sets the layout, adds listeners, and starts star timer
         public Level2() {
             cl3 = new CardLayout();
             setLayout(cl3);
             addMouseListener(this);
+            addMouseMotionListener(this);
             run3();
             StarHandler sh = new StarHandler();
             starTimer = new Timer(10, sh);
@@ -977,6 +1002,7 @@ class VPanel extends JPanel {
             grabFocus();
             super.paintComponent(g);
         }
+
         // This is the instructions panel which teaches the user how to steer their ship and fire torpedoes.
         class Instructions extends JPanel {
             // This is the constructor of the instructions panel which sets the background
@@ -1008,9 +1034,12 @@ class VPanel extends JPanel {
                 g.drawString("Use torpedoes to destroy Klingon ships", 100, 400);
                 g.drawString("They can withstand more than one", 100, 440);
                 g.drawString("Avoid enemy torpedoes!", 100, 500);
+                g.setColor(SILVER);
+                g.fillRect(660, 650, 100, 60);
                 getSTF(40f);
                 g.setFont(stf);
-                g.drawString("Press mouse to continue", 200, 700);
+                g.setColor(nextColor);
+                g.drawString("NEXT", 675, 700);
                 g.drawImage(new ImageIcon("spaceship.png").getImage(), 600, 180, 60, 120, null);
                 g.drawImage(new ImageIcon("torpedo.png").getImage(), 600, 320, 80, 16, null);
                 g.drawImage(new ImageIcon("klingonship.png").getImage(), 600, 480, 140, 80, null);
@@ -1371,6 +1400,20 @@ class VPanel extends JPanel {
                 g.drawString("You lose!", 375, 400);
             }
         }
+        // this method is called whenever the user drags their mouse on the screen (currently empty)
+        @Override
+        public void mouseDragged(MouseEvent e) {
+
+        }
+        // this method is called whenever the user moves their mouse and checks if the user hovers over the next button
+        @Override
+        public void mouseMoved(MouseEvent e) {
+            int x_coord = e.getX();
+            int y_coord = e.getY();
+            if(instructions && x_coord >= 660 && x_coord <= 760 && y_coord >= 650 && y_coord <= 710) nextColor = GOLD2;
+            else nextColor = GOLD;
+            repaint();
+        }
         // This class contains all variables and methods required to draw a torpedo
         class Torpedo {
             double x_coord, y_coord;
@@ -1410,7 +1453,9 @@ class VPanel extends JPanel {
         // this method is used to transport the user to the game page after they have read the instructions
         @Override
         public void mousePressed(MouseEvent e) {
-            if(instructions) {
+            int x_coord = e.getX();
+            int y_coord = e.getY();
+            if(instructions && x_coord >= 660 && x_coord <= 760 && y_coord >= 650 && y_coord <= 710) {
                 cl3.next(this);
                 sb.initialize();
                 instructions = false;
