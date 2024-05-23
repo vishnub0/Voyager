@@ -327,11 +327,13 @@ class VPanel extends JPanel {
             g.drawString("2", 550, 430);
             if(level < 2) g.drawImage(lock, 500, 300, 150, 150, null);
         }
+        // this method is called whenever the user clicks their mouse (currently empty)
         @Override
         public void mouseClicked(MouseEvent e) {
 
         }
-
+        // this method is used to check if the user clicks on one of the buttons on the levels page and transports them
+        // to that panel
         @Override
         public void mousePressed(MouseEvent e) {
             int x_coord = e.getX();
@@ -339,27 +341,27 @@ class VPanel extends JPanel {
             if(x_coord >= 150 && x_coord <= 300 && y_coord >= 300 && y_coord <= 450) showPanel("l1");
             else if(x_coord >= 500 && x_coord <= 650 && y_coord >= 300 && y_coord <= 450 && sf.level >= 2) showPanel("l2");
         }
-
+        // this method is called whenever the user releases their mouse (currently empty)
         @Override
         public void mouseReleased(MouseEvent e) {
 
         }
-
+        // this method is called whenever the user's mouse enters the screen (currently empty)
         @Override
         public void mouseEntered(MouseEvent e) {
 
         }
-
+        // this method is called whenever the user's mouse exits the screen (currently empty)
         @Override
         public void mouseExited(MouseEvent e) {
 
         }
-
+        // this method is called whenever the user drags their mouse (currently empty)
         @Override
         public void mouseDragged(MouseEvent e) {
 
         }
-
+        // this method is used to check if the user is hovering over a button and if they are the text changes color
         @Override
         public void mouseMoved(MouseEvent e) {
             int x_coord = e.getX();
@@ -447,8 +449,7 @@ class VPanel extends JPanel {
                 for(int i = 0; i < 10; i++) g.fillRect(450, 725 - 20 * i, 20, 20);
                 g.setColor(Color.BLACK);
                 ((Graphics2D)g).setStroke(new BasicStroke(2));
-                g.drawLine(50, 450, 150, 450);
-                g.drawLine(50, 470, 150, 470);
+                g.drawRect(50, 450, 140, 20);
                 for(int i = 0; i <= 7; i++) g.drawLine(50 + 20 * i, 450, 50 + 20 * i, 470);
                 for(int i = 0; i <= 10; i++) g.drawLine(450, 525 + 20 * i, 470, 525 + 20 * i);
                 g.drawImage(new ImageIcon("redskull.png").getImage(), 440, 505, 40, 40, null);
@@ -472,6 +473,7 @@ class VPanel extends JPanel {
             int lives = 3;
             ArrayList<Particle> particles = new ArrayList<>();
             Image recharge, freeze;
+            Image eyeball, bloodyheart, bloodyskull;
             boolean frozen = false;
             int superCharge = 0;
             Image skull, redskull;
@@ -495,6 +497,9 @@ class VPanel extends JPanel {
                 skull = new ImageIcon("skull.png").getImage();
                 redskull = new ImageIcon("redskull.png").getImage();
                 bg = new ImageIcon("level1.png").getImage();
+                eyeball = new ImageIcon("eyeball.png").getImage();
+                bloodyheart = new ImageIcon("bloodyheart.png").getImage();
+                bloodyskull = new ImageIcon("bloodyskull.png").getImage();
             }
             // This method is used to start all the timers when the user switches to the game page
             public void __init__() {
@@ -524,8 +529,17 @@ class VPanel extends JPanel {
                 while(removeEnemies()){}
                 for(Enemy e : enemies) e.drawEnemy(g);
                 for (Particle particle : particles) {
-                    g.setColor(new Color(136, 8, 8));
-                    g.fillOval((int)particle.posX, (int)particle.posY, 5, 5);
+                    if(particle.type == 1.1) {
+                        g.drawImage(eyeball, (int)particle.posX, (int)particle.posY, 30, 30, null);
+                    } else if(particle.type == 1.2) {
+                        g.drawImage(bloodyheart, (int)particle.posX, (int)particle.posY, 30, 30, null);
+                    } else if(particle.type == 1.3) {
+                        g.drawImage(bloodyskull, (int)particle.posX, (int)particle.posY, 30, 30, null);
+                    } else if(particle.type == 0) {
+                        g.setColor(new Color(136, 8, 8));
+                        if(particle.velY > 0) g.fillOval((int)particle.posX, (int)particle.posY, 5, 5);
+                        else g.fillOval((int)particle.posX-5, (int)particle.posY-5, 10, 10);
+                    }
                 }
                 for(Laser laser : lasers) laser.drawLaser(g);
                 g.setFont(stf);
@@ -576,7 +590,7 @@ class VPanel extends JPanel {
                             if(superCharge < 10) superCharge++;
                             Random rand = new Random();
                             for(int i = 0; i < (int)(Math.random()*101) + 50; i++) {
-                                boolean bloody = (int)(Math.random()*10) + 1 > 3;
+                                boolean bloody = Math.random() > 0.01;
                                 double vel1 = rand.nextDouble(20) - 10;
                                 double vel2 = rand.nextDouble(20) - 10;
                                 particles.add(new Particle(e.x_coord, e.y_coord, vel1, vel2, bloody)); // FIXME: fix centering of particle once final sprite is being used
@@ -657,6 +671,8 @@ class VPanel extends JPanel {
                     } else if(secondsLeft == 0) {
                         stopAll();
                         showPanel("win");
+                        sf.level = 2;
+                        sf.save();
                     }
                     repaint();
                 }
@@ -675,7 +691,7 @@ class VPanel extends JPanel {
                         enemy.shot = true;
                         Random rand = new Random();
                         for(int i = 0; i < (int)(Math.random()*101) + 50; i++) {
-                            boolean bloody = (int)(Math.random()*10) + 1 > 3;
+                            boolean bloody = Math.random() > 0.01;
                             double vel1 = rand.nextDouble(20) - 10;
                             double vel2 = rand.nextDouble(20) - 10;
                             particles.add(new Particle(enemy.x_coord, enemy.y_coord, vel1, vel2, bloody)); // FIXME: fix centering of particle once final sprite is being used
@@ -747,8 +763,14 @@ class VPanel extends JPanel {
             }
             // This method is used to remove all particles that are off of the screen, called in a while(){}
             public boolean removeParticles() {
+                long current = System.currentTimeMillis();
                 for(Particle p : particles) {
-                    if(p.posX < -20 || p.posX > 820 || p.posY < -20 || p.posY > 820) {
+                    if(p.type <= 1.3 && p.posY >= p.splatterY) {
+                        particles.remove(p);
+                        particles.add(new Particle(p.posX, p.posY, p.type));
+                        return true;
+                    }
+                    if(p.posX < -20 || p.posX > 820 || p.posY < -20 || p.posY > 820 || p.type <= 1 && current - p.creation > 15000) {
                         particles.remove(p);
                         return true;
                     }
@@ -892,11 +914,7 @@ class VPanel extends JPanel {
             @Override
             public void keyPressed(KeyEvent e) {
                 int keycode = e.getKeyCode();
-                if(keycode == 32) {
-                    nextPanel();
-                    sf.level = 2;
-                    sf.save();
-                }
+                if(keycode == 32) nextPanel();
             }
             // this method is called whenever the user releases a key on the SWin panel (currently empty)
             @Override
@@ -1469,19 +1487,19 @@ class VPanel extends JPanel {
         // this method is called whenever the user's mouse enters the screen (currently empty)
         @Override
         public void mouseEntered(MouseEvent e) {
-
         }
         // this method is called whenever the user's mouse exits the screen (currently empty)
         @Override
         public void mouseExited(MouseEvent e) {
-
         }
     }
     // This class contains all the information needed to create particles such as powerups, and later on, blood and guts
     class Particle {
         double posX, posY, velX, velY;
-        int type;
+        double type;
         // type = 0: blood, type = 1: organ, type = 2: recharge, type = 3: freeze
+        double splatterY = 820;
+        long creation;
         boolean gravity;
         // This constructor is used to randomly initialize the location and type of particle (recharge or freeze)
         public Particle() {
@@ -1491,6 +1509,7 @@ class VPanel extends JPanel {
             velY = 30;
             gravity = true;
             type = (int)(Math.random() * 2) + 2;
+            creation = System.currentTimeMillis();
         }
         // constructor for a moving blood/organ particle
         public Particle(double posX, double posY, double velX, double velY, boolean isBlood) {
@@ -1499,18 +1518,20 @@ class VPanel extends JPanel {
             this.velX = velX;
             this.velY = velY;
             if(isBlood) this.type = 0;
-            else this.type = 1;
+            else this.type = ((int)(Math.random() * 3) + 11)/10.0;
             this.gravity = true;
+            splatterY = (Math.random() * 116) + 675;
+            creation = System.currentTimeMillis();
         }
         // constructor for blood/organ particles that aren't moving
-        public Particle(double posX, double posY, boolean isBlood) {
+        public Particle(double posX, double posY, double type) {
             this.posX = posX;
             this.posY = posY;
-            if(isBlood) this.type = 0;
-            else this.type = 1;
+            this.type = type;
             this.velX = 0;
             this.velY = 0;
             this.gravity = false;
+            creation = System.currentTimeMillis();
         }
         // This method is used to check if anything collides with the particle
         public boolean isColliding(double positionX, double positionY) {

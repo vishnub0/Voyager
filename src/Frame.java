@@ -43,10 +43,11 @@ class Level3 extends JPanel {
         Timer actTimer;
         Kirk kirk = new Kirk();
         double kirkX = 300, kirkY = 500;
-        Khan khan = new Khan();
-        double khanX = 500, khanY = 500;
         boolean moveDone = true;
         double dist = 200;
+        Image punchingBag = load("punchingbag");
+        double pb_rotDeg = 90;
+        long lastHit = -1;
         // constructor that sets the background, adds the KeyListener, and loads all the sprite images
         public Bossfight() {
             setBackground(Color.PINK);
@@ -82,7 +83,6 @@ class Level3 extends JPanel {
                 } else if(currentIndex == 2) {
                     if(current - kirk.timeSinceMove > 125) {
                         currentIndex = 0;
-
                         moveDone = true;
                     }
                 } else if(currentIndex == 3) {
@@ -93,14 +93,15 @@ class Level3 extends JPanel {
                 } else {
                     currentIndex = 0;
                 }
-                if(khanIndex == 1 && currentIndex == 4) {
-                    if(current - kirk.timeSinceMove <= 1000) {
-                        khanX = khan.prevX + (double) (current - kirk.timeSinceMove) / 10;
-                        if(khanX > 700) khanX = 700;
-                        khanY = 500 - 200 * Math.sin(Math.PI * (current - kirk.timeSinceMove) / 1000);
-                    }
-                    else khanIndex = 0;
-                } else if(khanIndex >= 1 && current - kirk.timeSinceMove > 450) khanIndex = 0;
+                if(current - lastHit <= 500) pb_rotDeg = calcDeg(0, current - lastHit);
+//                if(khanIndex == 1 && currentIndex == 4) {
+//                    if(current - kirk.timeSinceMove <= 1000) {
+//                        khanX = khan.prevX + (double) (current - kirk.timeSinceMove) / 10;
+//                        if(khanX > 700) khanX = 700;
+//                        khanY = 500 - 200 * Math.sin(Math.PI * (current - kirk.timeSinceMove) / 1000);
+//                    }
+//                    else khanIndex = 0;
+//                } else if(khanIndex >= 1 && current - kirk.timeSinceMove > 450) khanIndex = 0;
                 repaint();
             }
         }
@@ -113,10 +114,9 @@ class Level3 extends JPanel {
             grabFocus();
             super.paintComponent(g);
             g.drawImage(sprites[currentIndex], (int)kirkX, (int)kirkY, 100, 250, null);
-            g.drawImage(esprites[khanIndex], (int)khanX, (int)khanY, 100, 250, null);
+            drawPB(g);
             g.setColor(Color.RED);
             g.fillRect(10, 10, kirk.health, 20);
-            g.fillRect(580, 10, khan.health, 20);
             g.setColor(Color.BLACK);
             ((Graphics2D)g).setStroke(new BasicStroke(2));
             g.drawRect(10, 10, 100, 20);
@@ -125,6 +125,23 @@ class Level3 extends JPanel {
             for(int i = 0; i <= 200; i += 25) g.drawLine(580 + i, 10, 580 + i, 30);
             ((Graphics2D)g).setStroke(new BasicStroke(1));
         }
+        // this method is used to draw the punching bag on the screen
+        public void drawPB(Graphics g) {
+            try {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setColor(Color.RED);
+                g2d.fillOval(398, 303, 4, 4);
+                g2d.rotate(Math.toRadians(pb_rotDeg), 400, 305);
+                g2d.drawImage(punchingBag, 400, 260, 450, 90, null);
+                g2d.rotate(-Math.toRadians(pb_rotDeg), 400, 305);
+            } catch (Exception e) {
+                throw new RuntimeException();
+            }
+        }
+        // this method is used to calculate the degree of the punching bag
+        public double calcDeg(int move, long time) {
+            return 90 - (90 * Math.sin(Math.PI * time / 500));
+        }
 
         class Kirk {
             int health = 100;
@@ -132,7 +149,7 @@ class Level3 extends JPanel {
 
             // method used to move the player
             public void move(int right) {
-                double distance = khanX - kirkX - 100;
+                double distance = kirkX - 100;
                 if(right == 1) {
                     if (distance >= 20 && kirkX + 20 <= 700) kirkX += 20;
                     else if(distance < 20 && kirkX + distance <= 700) kirkX += distance;
@@ -150,29 +167,29 @@ class Level3 extends JPanel {
                 moveDone = false;
             }
             // first move of the player
-            public void jab(Khan khan) {
+            public void jab() {
                 currentIndex = 2;
                 timeSinceMove = System.currentTimeMillis();
                 moveDone = false;
                 boolean blocked = (int)(Math.random() * 10) + 1 < 7;
                 if(dist < 10) {
                     if (!blocked) {
-                        khan.health -= 20;
                         khanIndex = 1;
+                        lastHit = System.currentTimeMillis();
                     } else {
                         khanIndex = 2;
                     }
                 }
             }
             // second move of the player
-            public void hook(Khan khan) {
+            public void hook() {
                 currentIndex = 3;
                 timeSinceMove = System.currentTimeMillis();
                 moveDone = false;
                 boolean blocked = (int)(Math.random() * 10) + 1 < 5;
                 if(dist < 10) {
                     if(!blocked) {
-                        khan.health -= 30;
+                        //khan.health -= 30;
                         khanIndex = 1;
                     } else {
                         khanIndex = 2;
@@ -181,16 +198,16 @@ class Level3 extends JPanel {
 
             }
             // third move of the player
-            public void uppercut(Khan khan) {
+            public void uppercut() {
                 currentIndex = 4;
                 timeSinceMove = System.currentTimeMillis();
                 moveDone = false;
                 boolean blocked = (int)(Math.random() * 10) + 1 < 3;
                 if(dist < 10) {
                     if(!blocked) {
-                        khan.health -= 20;
+                        //khan.health -= 20;
                         khanIndex = 1;
-                        khan.prevX = khanX;
+                        //khan.prevX = khanX;
                     } else {
                         khanIndex = 2;
                     }
@@ -199,10 +216,6 @@ class Level3 extends JPanel {
             }
         }
 
-        class Khan {
-            int health = 200;
-            double prevX = 500;
-        }
         @Override
         public void keyTyped(KeyEvent e) {
         }
@@ -210,14 +223,14 @@ class Level3 extends JPanel {
         public void keyPressed(KeyEvent e) {
             int keycode = e.getKeyCode();
             if(moveDone) {
-                dist = Math.abs(kirkX + 100 - khanX);
+                //dist = Math.abs(kirkX + 100 - khanX);
                 switch(keycode) {
                     case KeyEvent.VK_UP -> kirk.jump();
                     case KeyEvent.VK_RIGHT -> kirk.move(1);
                     case KeyEvent.VK_LEFT -> kirk.move(-1);
-                    case 67 -> kirk.jab(khan);
-                    case 88 -> kirk.hook(khan);
-                    case 90 -> kirk.uppercut(khan);
+                    case 67 -> kirk.jab();
+                    case 88 -> kirk.hook();
+                    case 90 -> kirk.uppercut();
                 }
             }
             repaint();
