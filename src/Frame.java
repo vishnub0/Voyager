@@ -37,16 +37,17 @@ class Level3 extends JPanel {
     // This is the class that draws the actual bossfight
     class Bossfight extends JPanel implements KeyListener {
         Image[] sprites = new Image[6];
-        Image[] esprites = new Image[3];
         int currentIndex = 0;
         int khanIndex = 0;
-        Timer actTimer;
+        Timer actTimer, rotTimer;
         Kirk kirk = new Kirk();
         double kirkX = 300, kirkY = 500;
         boolean moveDone = true;
         double dist = 200;
         Image punchingBag = load("punchingbag");
-        double pb_rotDeg = 90;
+        double pb_rotDeg = 0;
+        double ang_vel = 0;
+        final double AIR_RESISTANCE = 0.9999999999999999999999;
         long lastHit = -1;
         // constructor that sets the background, adds the KeyListener, and loads all the sprite images
         public Bossfight() {
@@ -58,14 +59,18 @@ class Level3 extends JPanel {
             sprites[3] = load("hook");
             sprites[4] = load("uppercut");
             sprites[5] = load("knockback");
-            esprites[0] = load("k_standing");
-            esprites[1] = load("k_knockback");
-            esprites[2] = load("k_block");
             actTimer = new Timer(10, new ActHandler());
+            rotTimer = new Timer(16, e -> {
+                pb_rotDeg += ang_vel * AIR_RESISTANCE * 0.016;
+                if(pb_rotDeg > 0) ang_vel -= 1;
+                else if(pb_rotDeg < 0) ang_vel += 1;
+                repaint();
+            });
         }
         // method that is used to start all timers when the user goes to the screen
         public void init() {
             actTimer.start();
+            rotTimer.start();
         }
         // handler class that is used to determine the appropriate user sprite
         class ActHandler implements ActionListener {
@@ -93,19 +98,9 @@ class Level3 extends JPanel {
                 } else {
                     currentIndex = 0;
                 }
-                if(current - lastHit <= 500) pb_rotDeg = calcDeg(0, current - lastHit);
-//                if(khanIndex == 1 && currentIndex == 4) {
-//                    if(current - kirk.timeSinceMove <= 1000) {
-//                        khanX = khan.prevX + (double) (current - kirk.timeSinceMove) / 10;
-//                        if(khanX > 700) khanX = 700;
-//                        khanY = 500 - 200 * Math.sin(Math.PI * (current - kirk.timeSinceMove) / 1000);
-//                    }
-//                    else khanIndex = 0;
-//                } else if(khanIndex >= 1 && current - kirk.timeSinceMove > 450) khanIndex = 0;
                 repaint();
             }
         }
-
         // method that is used to quickly load all the images required
         public Image load(String filename) {
             return new ImageIcon(filename + ".png").getImage();
@@ -131,16 +126,12 @@ class Level3 extends JPanel {
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setColor(Color.RED);
                 g2d.fillOval(398, 303, 4, 4);
-                g2d.rotate(Math.toRadians(pb_rotDeg), 400, 305);
-                g2d.drawImage(punchingBag, 400, 260, 450, 90, null);
-                g2d.rotate(-Math.toRadians(pb_rotDeg), 400, 305);
+                g2d.rotate(Math.toRadians(pb_rotDeg), 445, 260);
+                g2d.drawImage(punchingBag, 400, 260, 90, 450, null);
+                g2d.rotate(-Math.toRadians(pb_rotDeg), 445, 260);
             } catch (Exception e) {
                 throw new RuntimeException();
             }
-        }
-        // this method is used to calculate the degree of the punching bag
-        public double calcDeg(int move, long time) {
-            return 90 - (90 * Math.sin(Math.PI * time / 500));
         }
 
         class Kirk {
@@ -172,13 +163,12 @@ class Level3 extends JPanel {
                 timeSinceMove = System.currentTimeMillis();
                 moveDone = false;
                 boolean blocked = (int)(Math.random() * 10) + 1 < 7;
-                if(dist < 10) {
-                    if (!blocked) {
-                        khanIndex = 1;
-                        lastHit = System.currentTimeMillis();
-                    } else {
-                        khanIndex = 2;
-                    }
+                if (!blocked) {
+                    khanIndex = 1;
+                    lastHit = System.currentTimeMillis();
+                    attack();
+                } else {
+                    khanIndex = 2;
                 }
             }
             // second move of the player
@@ -187,15 +177,12 @@ class Level3 extends JPanel {
                 timeSinceMove = System.currentTimeMillis();
                 moveDone = false;
                 boolean blocked = (int)(Math.random() * 10) + 1 < 5;
-                if(dist < 10) {
-                    if(!blocked) {
-                        //khan.health -= 30;
-                        khanIndex = 1;
-                    } else {
-                        khanIndex = 2;
-                    }
+                if(!blocked) {
+                    khanIndex = 1;
+                    attack();
+                } else {
+                    khanIndex = 2;
                 }
-
             }
             // third move of the player
             public void uppercut() {
@@ -203,17 +190,16 @@ class Level3 extends JPanel {
                 timeSinceMove = System.currentTimeMillis();
                 moveDone = false;
                 boolean blocked = (int)(Math.random() * 10) + 1 < 3;
-                if(dist < 10) {
-                    if(!blocked) {
-                        //khan.health -= 20;
-                        khanIndex = 1;
-                        //khan.prevX = khanX;
-                    } else {
-                        khanIndex = 2;
-                    }
+                if(!blocked) {
+                    khanIndex = 1;
+                    attack();
+                } else {
+                    khanIndex = 2;
                 }
-
             }
+        }
+        public void attack() {
+            if(kirkX - 400 < 20 && Math.abs(pb_rotDeg) <= 20) ang_vel -= 20;
         }
 
         @Override
