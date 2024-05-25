@@ -44,6 +44,7 @@ class VPanel extends JPanel {
     final Color GOLD = new Color(211, 142, 38);
     final Color GOLD2 = new Color(238, 167, 59);
     final Color SILVER = new Color(192,192,192);
+    final Color AZURE = new Color(55, 198, 255);
     ArrayList<Star> stars = new ArrayList<>();
     Timer starTimer;
     Image logo = new ImageIcon("voyager-logo.png").getImage();
@@ -53,6 +54,8 @@ class VPanel extends JPanel {
     Clip clip;
     Homepage homepage;
     Level1 level1;
+    Image sadJoe;
+    Cutscene1 cutscene1;
     public static SaveFile sf = SaveFile.load();
     // This is the constructor which sets the background and layout of the VPanel. It also calls the run method.
     public VPanel() {
@@ -74,10 +77,13 @@ class VPanel extends JPanel {
         add(homepage, "homepage");
         Levels levels = new Levels();
         add(levels, "levels");
+        cutscene1 = new Cutscene1();
+        add(cutscene1, "cutscene1");
         level1 = new Level1();
         add(level1, "l1");
         Level2 level2 = new Level2();
         add(level2, "l2");
+        sadJoe = new ImageIcon("sadjoe.png").getImage();
     }
     // This class represents a star in my background. It has all the variables and methods needed to draw the star.
     class Star {
@@ -302,7 +308,7 @@ class VPanel extends JPanel {
     // This is the JPanel used to select the level to play, contains everything required to draw it
     class Levels extends JPanel implements MouseListener, MouseMotionListener {
         Image lock = new ImageIcon("lock.png").getImage();
-        Color levColor1 = GOLD, levColor2 = GOLD;
+        boolean hovering1 = false, hovering2 = false;
         // Constructor used to set background of level page and add mouse listener
         public Levels() {
             setBackground(Color.BLACK);
@@ -318,12 +324,23 @@ class VPanel extends JPanel {
             g.setColor(GOLD);
             g.drawString("LEVELS", 250, 130);
             int level = sf.level;
-            g.setColor(SILVER);
-            g.fillRect(150, 300, 150, 150);
-            g.fillRect(500, 300, 150, 150);
-            g.setColor(levColor1);
+            if (hovering1) {
+                g.setColor(AZURE);
+                g.fillRect(145, 295, 160, 160);
+            } else {
+                g.setColor(SILVER);
+                g.fillRect(150, 300, 150, 150);
+            }
+            g.setColor(GOLD);
             g.drawString("1", 200, 430);
-            g.setColor(levColor2);
+            if (hovering2) {
+                g.setColor(AZURE);
+                g.fillRect(495, 295, 160, 160);
+            } else {
+                g.setColor(SILVER);
+                g.fillRect(500, 300, 150, 150);
+            }
+            g.setColor(GOLD);
             g.drawString("2", 550, 430);
             if(level < 2) g.drawImage(lock, 500, 300, 150, 150, null);
         }
@@ -338,8 +355,14 @@ class VPanel extends JPanel {
         public void mousePressed(MouseEvent e) {
             int x_coord = e.getX();
             int y_coord = e.getY();
-            if(x_coord >= 150 && x_coord <= 300 && y_coord >= 300 && y_coord <= 450) showPanel("l1");
-            else if(x_coord >= 500 && x_coord <= 650 && y_coord >= 300 && y_coord <= 450 && sf.level >= 2) showPanel("l2");
+            if(x_coord >= 150 && x_coord <= 300 && y_coord >= 300 && y_coord <= 450) {
+                showPanel("cutscene1");
+                cutscene1.scene01.textTimer.start();
+                hovering1 = false;
+            } else if(x_coord >= 500 && x_coord <= 650 && y_coord >= 300 && y_coord <= 450 && sf.level >= 2) {
+                showPanel("l2");
+                hovering2 = false;
+            }
         }
         // this method is called whenever the user releases their mouse (currently empty)
         @Override
@@ -366,10 +389,192 @@ class VPanel extends JPanel {
         public void mouseMoved(MouseEvent e) {
             int x_coord = e.getX();
             int y_coord = e.getY();
-            if(x_coord >= 150 && x_coord <= 300 && y_coord >= 300 && y_coord <= 450) levColor1 = GOLD2;
-            else levColor1 = GOLD;
-            if(x_coord >= 500 && x_coord <= 650 && y_coord >= 300 && y_coord <= 450 && sf.level >= 2) levColor2 = GOLD2;
-            else levColor2 = GOLD;
+            if(x_coord >= 150 && x_coord <= 300 && y_coord >= 300 && y_coord <= 450) hovering1 = true;
+            else hovering1 = false;
+            if(x_coord >= 500 && x_coord <= 650 && y_coord >= 300 && y_coord <= 450 && sf.level >= 2) hovering2 = true;
+            else hovering2 = false;
+        }
+    }
+    // This is the JPanel for the first cutscene of the game
+    class Cutscene1 extends JPanel {
+        CardLayout clc1;
+        Scene01 scene01;
+        Scene02 scene02;
+        Scene03 scene03;
+        Scene04 scene04;
+        Scene05 scene05;
+        // constructor which creates all of the
+        public Cutscene1() {
+            clc1 = new CardLayout();
+            setLayout(clc1);
+            scene01 = new Scene01();
+            add(scene01, "sc1");
+            scene02 = new Scene02();
+            add(scene02, "sc2");
+            scene03 = new Scene03();
+            add(scene03, "sc3");
+            scene04 = new Scene04();
+            add(scene04, "sc4");
+            scene05 = new Scene05();
+            add(scene05, "sc5");
+        }
+        // method to go to the next panel in the cardlayout.
+        public void nextPanel(int scene) {
+            clc1.next(this);
+            if(scene == 2) scene02.textTimer.start();
+            else if(scene == 3) scene03.textTimer.start();
+            else if(scene == 4) scene04.textTimer.start();
+            else if(scene == 5) scene05.textTimer.start();
+        }
+        // class for the first scene in the cutscene introducing the Gorn.
+        class Scene01 extends JPanel {
+            String text = "We have intel that the Gorn are delivering more\nresources to their soldiers. If this continues,\nwe will lose the war.     ";
+            String displayedText = "";
+            JTextArea bubble = new JTextArea();
+            Timer textTimer;
+            // constructor that creates the timer needed to display the text
+            public Scene01() {
+                setLayout(null);
+                setBackground(Color.LIGHT_GRAY);
+                bubble.setBounds(10, 10, 300, 250);
+                add(bubble);
+                textTimer = new Timer(50, e -> {
+                    if(displayedText.length() < text.length()) {
+                        displayedText = text.substring(0, displayedText.length() + 1);
+                        bubble.setText(displayedText);
+                    } else {
+                        nextPanel(2);
+                        textTimer.stop();
+                    }
+                    repaint();
+                });
+            }
+            // paintComponent which draws the image of the briefcase on the screen
+            public void paintComponent(Graphics g) {
+                grabFocus();
+                super.paintComponent(g);
+                g.drawImage(new ImageIcon("briefcase.png").getImage(), 350, 100, 430, 314, null);
+            }
+        }
+        // class for the second scene where Kirk gives Spock the order.
+        class Scene02 extends JPanel {
+            String text = "That is why I have assigned you, Spock,\nthe mission of stopping the\nreinforcements.     ";
+            String displayedText = "";
+            JTextArea bubble = new JTextArea();
+            Timer textTimer;
+            // constructor that creates the timer needed to display the text
+            public Scene02() {
+                setLayout(null);
+                setBackground(Color.LIGHT_GRAY);
+                bubble.setBounds(10, 10, 270, 200);
+                add(bubble);
+                textTimer = new Timer(50, e -> {
+                    if(displayedText.length() < text.length()) {
+                        displayedText = text.substring(0, displayedText.length() + 1);
+                        bubble.setText(displayedText);
+                    } else {
+                        nextPanel(3);
+                        textTimer.stop();
+                    }
+                    repaint();
+                });
+            }
+            // paintComponent which draws the image of captain kirk on the screen
+            public void paintComponent(Graphics g) {
+                grabFocus();
+                super.paintComponent(g);
+                g.drawImage(new ImageIcon("kirk1.jpeg").getImage(), 0, 0, 800, 800, null);
+            }
+        }
+        // class for the third scene where Spock acknowledges the mission.
+        class Scene03 extends JPanel {
+            String text = "Yes sir. I will intercept\nthem before they are able to\ntouch the ground.     ";
+            String displayedText = "";
+            JTextArea bubble = new JTextArea();
+            Timer textTimer;
+            // constructor that creates the timer needed to display the text
+            public Scene03() {
+                setLayout(null);
+                setBackground(Color.LIGHT_GRAY);
+                bubble.setBounds(10, 10, 230, 230);
+                add(bubble);
+                textTimer = new Timer(50, e -> {
+                    if(displayedText.length() < text.length()) {
+                        displayedText = text.substring(0, displayedText.length() + 1);
+                        bubble.setText(displayedText);
+                    } else {
+                        nextPanel(4);
+                        textTimer.stop();
+                    }
+                    repaint();
+                });
+            }
+            // paintComponent which draws the image of spock on the screen
+            public void paintComponent(Graphics g) {
+                grabFocus();
+                super.paintComponent(g);
+                g.drawImage(new ImageIcon("spocksalute.jpeg").getImage(), 0, 0, 800, 800, null);
+            }
+        }
+        // class for the fourth scene where the blimp is shown
+        class Scene04 extends JPanel {
+            String text = "In the middle of nowhere...\nThe Gorn Blimp     ";
+            String displayedText = "";
+            JTextArea bubble = new JTextArea();
+            Timer textTimer;
+            // constructor that creates the timer needed to display the text
+            public Scene04() {
+                setLayout(null);
+                setBackground(Color.LIGHT_GRAY);
+                bubble.setBounds(10, 210, 230, 70);
+                add(bubble);
+                textTimer = new Timer(50, e -> {
+                    if(displayedText.length() < text.length()) {
+                        displayedText = text.substring(0, displayedText.length() + 1);
+                        bubble.setText(displayedText);
+                    } else {
+                        nextPanel(5);
+                        textTimer.stop();
+                    }
+                    repaint();
+                });
+            }
+            // paintComponent which draws the image of the blimp on the screen
+            public void paintComponent(Graphics g) {
+                grabFocus();
+                super.paintComponent(g);
+                g.drawImage(new ImageIcon("level1.png").getImage(), 0, 0, 800, 800, null);
+            }
+        }
+        // class for the fifth scene where Spock is looking through his binoculars.
+        class Scene05 extends JPanel {
+            String text = "Showtime.                              ";
+            String displayedText = "";
+            JTextArea bubble = new JTextArea();
+            Timer textTimer;
+            // constructor that creates the timer needed to display the text
+            public Scene05() {
+                setLayout(null);
+                setBackground(Color.LIGHT_GRAY);
+                bubble.setBounds(560, 10, 230, 50);
+                add(bubble);
+                textTimer = new Timer(50, e -> {
+                    if(displayedText.length() < text.length()) {
+                        displayedText = text.substring(0, displayedText.length() + 1);
+                        bubble.setText(displayedText);
+                    } else {
+                        showPanel("l1");
+                        textTimer.stop();
+                    }
+                    repaint();
+                });
+            }
+            // paintComponent which draws the image of spock on the screen
+            public void paintComponent(Graphics g) {
+                grabFocus();
+                super.paintComponent(g);
+                g.drawImage(new ImageIcon("spockbinoc.jpeg").getImage(), 0, 0, 800, 800, null);
+            }
         }
     }
     // This is the JPanel for the level 1, and contains all the methods and variables to draw the first level.
@@ -377,7 +582,7 @@ class VPanel extends JPanel {
         CardLayout cl2;
         boolean instructions = true;
         Shooter shooter;
-        Color nextColor = GOLD;
+        boolean hovering = false;
         // This is the constructor which sets the layout and calls the run2 method in order to create the JPanels.
         public Level1() {
             cl2 = new CardLayout();
@@ -437,12 +642,17 @@ class VPanel extends JPanel {
                 g.drawString("up your super move (kills all", 85, 635);
                 g.drawString("enemies on screen).", 85, 670);
                 g.drawString("Type 's' to use.", 85, 705);
-                g.setColor(SILVER);
-                g.fillRect(660, 650, 100, 60);
                 getSTF(40f);
                 g.setFont(stf);
-                g.setColor(nextColor);
-                g.drawString("NEXT", 675, 700);
+                if(hovering) {
+                    g.setColor(AZURE);
+                    g.fillRect(605, 645, 160, 70);
+                } else {
+                    g.setColor(SILVER);
+                    g.fillRect(610, 650, 150, 60);
+                }
+                g.setColor(GOLD);
+                g.drawString("CONTINUE", 620, 700);
                 g.setColor(Color.RED);
                 g.fillRect(50, 450, 140, 20);
                 g.setColor(new Color(136, 8, 8));
@@ -458,12 +668,10 @@ class VPanel extends JPanel {
         // This is the class that draws the level 1 game and takes care of the entire shooter
         class Shooter extends JPanel implements MouseListener, MouseMotionListener, KeyListener {
             Timer eTimer;
-            eHandler eh;
             Image blaster = new ImageIcon("laser_blaster.png").getImage();
             double rotationRad = 0.0;
             boolean entered = false;
             ArrayList<Laser> lasers = new ArrayList<>();
-            lHandler lh;
             Timer lTimer, spawnTimer, supplyTimer, countdown, superTimer, freezeTimer;
             int secondsLeft = 60;
             long prev = System.currentTimeMillis();
@@ -478,6 +686,7 @@ class VPanel extends JPanel {
             int superCharge = 0;
             Image skull, redskull;
             Image bg;
+            Image bgbg;
             // This is the constructor of the level 1 game page which sets bg, initializes timers, and loads images
             public Shooter() {
                 setBackground(Color.CYAN);
@@ -500,6 +709,7 @@ class VPanel extends JPanel {
                 eyeball = new ImageIcon("eyeball.png").getImage();
                 bloodyheart = new ImageIcon("bloodyheart.png").getImage();
                 bloodyskull = new ImageIcon("bloodyskull.png").getImage();
+                bgbg = new ImageIcon("level1bg.jpg").getImage();
             }
             // This method is used to start all the timers when the user switches to the game page
             public void __init__() {
@@ -522,6 +732,7 @@ class VPanel extends JPanel {
             public void paintComponent(Graphics g) {
                 grabFocus();
                 super.paintComponent(g);
+                g.drawImage(bgbg, 0, 0, 1375, 915, null);
                 g.drawImage(bg, -5, 60, 765, 800, null);
                 while(checkShot()){}
                 while(removeLasers()){}
@@ -573,7 +784,7 @@ class VPanel extends JPanel {
                 try {
                     Graphics2D g2d = (Graphics2D) g;
                     g2d.rotate(rotationRad+Math.PI/2, 400, 700);
-                    g2d.drawImage(blaster, 375, 700, 50, 50, null);
+                    g2d.drawImage(blaster, 360, 700, 80, 80, null);
                 } catch(Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -587,13 +798,16 @@ class VPanel extends JPanel {
                         if(rect.intersects(new Rectangle(e.x_coord, e.y_coord, 75, 100)) && !e.shot && e.y_coord < 650) {
                             e.shot = true;
                             lasers.remove(l);
+                            enemies.remove(e);
                             if(superCharge < 10) superCharge++;
                             Random rand = new Random();
                             for(int i = 0; i < (int)(Math.random()*101) + 50; i++) {
                                 boolean bloody = Math.random() > 0.01;
                                 double vel1 = rand.nextDouble(20) - 10;
                                 double vel2 = rand.nextDouble(20) - 10;
-                                particles.add(new Particle(e.x_coord, e.y_coord, vel1, vel2, bloody)); // FIXME: fix centering of particle once final sprite is being used
+                                int x = (int)(Math.random() * 21) + e.x_coord + 40;
+                                int y = (int)(Math.random() * 21) + e.y_coord + 40;
+                                particles.add(new Particle(x, y, vel1, vel2, bloody));
                             }
                             return true;
                         }
@@ -694,10 +908,13 @@ class VPanel extends JPanel {
                             boolean bloody = Math.random() > 0.01;
                             double vel1 = rand.nextDouble(20) - 10;
                             double vel2 = rand.nextDouble(20) - 10;
-                            particles.add(new Particle(enemy.x_coord, enemy.y_coord, vel1, vel2, bloody)); // FIXME: fix centering of particle once final sprite is being used
+                            int x = (int)(Math.random() * 21) + enemy.x_coord + 40;
+                            int y = (int)(Math.random() * 21) + enemy.y_coord + 40;
+                            particles.add(new Particle(x, y, vel1, vel2, bloody));
                         }
                     }
                     superCharge = 0;
+                    enemies = new ArrayList<>();
                     repaint();
                 }
             }
@@ -835,7 +1052,7 @@ class VPanel extends JPanel {
             class Enemy {
                 boolean shot = false;
                 boolean alreadyCounted = false;
-                int x_coord = (int)(Math.random()*686) + 25;
+                int x_coord = (int)(Math.random()*576) + 25;
                 int y_coord = 60;
                 static Image[] imgs = new Image[5];
                 long timeShot = -1;
@@ -846,10 +1063,10 @@ class VPanel extends JPanel {
                 }
                 // This method is used to draw the enemy on the screen
                 public void drawEnemy(Graphics g) {
-                    g.drawImage(imgs[current], x_coord, y_coord, 75, 100, null);
+                    g.drawImage(imgs[current], x_coord, y_coord, 100, 100, null);
                     if(frozen) {
                         g.setColor(new Color(200, 255, 255, 153));
-                        g.fillRect(x_coord, y_coord, 75, 100);
+                        g.fillRect(x_coord, y_coord, 100, 100);
                     }
                 }
                 // This method is used to determine which sprite should be displayed based on if they have been shot
@@ -923,17 +1140,82 @@ class VPanel extends JPanel {
             }
         }
         // This class extends JPanel and the user is transported here if they lose on level 1
-        class SLose extends JPanel {
+        class SLose extends JPanel implements MouseListener, MouseMotionListener {
+            boolean hoveringL = false;
             // This constructor sets the bg of the lose panel to be black
             public SLose() {
                 setBackground(Color.BLACK);
+                addMouseListener(this);
+                addMouseMotionListener(this);
             }
             // This method displays the text "You lose!" on the lose panel
             public void paintComponent(Graphics g) {
                 super.paintComponent(g);
+                g.drawImage(sadJoe, 100, 200, 600, 600, null);
                 g.setFont(stf);
+                if(hoveringL) {
+                    g.setColor(AZURE);
+                    g.fillRect(365, 650, 120, 65);
+                } else {
+                    g.setColor(SILVER);
+                    g.fillRect(370, 655, 110, 55);
+                }
                 g.setColor(GOLD);
-                g.drawString("You lose!", 400, 400);
+                g.drawString("You lose!", 200, 150);
+                g.drawString("Retry", 380, 700);
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if(hoveringL) {
+                    shooter.rotationRad = 0.0;
+                    shooter.lasers = new ArrayList<>();
+                    shooter.superCharge = 0;
+                    shooter.enemies = new ArrayList<>();
+                    shooter.particles = new ArrayList<>();
+                    shooter.numShots = 7;
+                    shooter.secondsLeft = 60;
+                    shooter.frozen = false;
+                    shooter.lives = 3;
+                    shooter.entered = false;
+                    shooter.prev = System.currentTimeMillis();
+                    shooter.__init__();
+                    showPanel("shooter");
+                    hoveringL = false;
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                int mouseX = e.getX();
+                int mouseY = e.getY();
+                if(mouseX >= 370 && mouseX <= 480 && mouseY >= 655 && mouseY <= 710) hoveringL = true;
+                else hoveringL = false;
             }
         }
         // This method shows the respective panel in the CardLayout of level 1
@@ -977,13 +1259,13 @@ class VPanel extends JPanel {
 
         }
         // this method is called in order to check if the user moves their mouse over the next button (color change)
-        // TODO: check if the user is hovering over the next button
         @Override
         public void mouseMoved(MouseEvent e) {
             int x_coord = e.getX();
             int y_coord = e.getY();
-            if(instructions && x_coord >= 660 && x_coord <= 760 && y_coord >= 650 && y_coord <= 710) nextColor = GOLD2;
-            else nextColor = GOLD;
+            // g.fillRect(610, 650, 150, 60);
+            if(instructions && x_coord >= 610 && x_coord <= 760 && y_coord >= 650 && y_coord <= 710) hovering = true;
+            else hovering = false;
             repaint();
         }
     }
@@ -992,7 +1274,7 @@ class VPanel extends JPanel {
         CardLayout cl3;
         SpaceBattle sb;
         boolean instructions = true;
-        Color nextColor = GOLD;
+        boolean hovering = false;
         // this is the constructor for the level 2 panel which sets the layout, adds listeners, and starts star timer
         public Level2() {
             cl3 = new CardLayout();
@@ -1052,12 +1334,17 @@ class VPanel extends JPanel {
                 g.drawString("Use torpedoes to destroy Klingon ships", 100, 400);
                 g.drawString("They can withstand more than one", 100, 440);
                 g.drawString("Avoid enemy torpedoes!", 100, 500);
-                g.setColor(SILVER);
-                g.fillRect(660, 650, 100, 60);
                 getSTF(40f);
                 g.setFont(stf);
-                g.setColor(nextColor);
-                g.drawString("NEXT", 675, 700);
+                if(hovering) {
+                    g.setColor(AZURE);
+                    g.fillRect(605, 645, 160, 70);
+                } else {
+                    g.setColor(SILVER);
+                    g.fillRect(610, 650, 150, 60);
+                }
+                g.setColor(GOLD);
+                g.drawString("CONTINUE", 620, 700);
                 g.drawImage(new ImageIcon("spaceship.png").getImage(), 600, 180, 60, 120, null);
                 g.drawImage(new ImageIcon("torpedo.png").getImage(), 600, 320, 80, 16, null);
                 g.drawImage(new ImageIcon("klingonship.png").getImage(), 600, 480, 140, 80, null);
@@ -1095,6 +1382,10 @@ class VPanel extends JPanel {
                 enemies.add(new EnemyShip());
                 explosion = new ImageIcon("explosion.png").getImage();
                 spawnTimer2 = new Timer(10, new SpawnHandler2());
+            }
+            // this method is used to add a ship to the screen
+            public void addShip() {
+                enemies.add(new EnemyShip());
             }
             // This method is used to start the timers and is called when the user switches to the panel
             public void initialize() {
@@ -1233,6 +1524,12 @@ class VPanel extends JPanel {
                 for (Torpedo torpedo1 : torpedoes) {
                     if(torpedo1.x_coord < -20 || torpedo1.x_coord > 820 || torpedo1.y_coord < -20 || torpedo1.y_coord > 820) {
                         torpedoes.remove(torpedo1);
+                        return true;
+                    }
+                }
+                for (Torpedo torpedo1 : torpedoes2) {
+                    if(torpedo1.x_coord < -20 || torpedo1.x_coord > 820 || torpedo1.y_coord < -20 || torpedo1.y_coord > 820) {
+                        torpedoes2.remove(torpedo1);
                         return true;
                     }
                 }
@@ -1403,19 +1700,92 @@ class VPanel extends JPanel {
             }
         }
         // This is the page the user is transported to if they lose the space battle
-        class LosePanel extends JPanel {
+        class LosePanel extends JPanel implements MouseListener, MouseMotionListener {
+            boolean hoveringL = false;
             // this is the constructor of the lose panel which sets the background to black
             public LosePanel() {
                 setBackground(Color.BLACK);
+                addMouseListener(this);
+                addMouseMotionListener(this);
             }
             // this is the pC of the lose panel which displays the text "You win!" in STF
             public void paintComponent(Graphics g) {
                 grabFocus();
                 super.paintComponent(g);
+                g.drawImage(sadJoe, 100, 200, 600, 600, null);
                 getSTF(35f);
                 g.setFont(stf);
+                if(hoveringL) {
+                    g.setColor(AZURE);
+                    g.fillRect(365, 650, 120, 65);
+                } else {
+                    g.setColor(SILVER);
+                    g.fillRect(370, 655, 110, 55);
+                }
                 g.setColor(GOLD);
-                g.drawString("You lose!", 375, 400);
+                g.drawString("You lose!", 200, 150);
+                g.drawString("Retry", 380, 700);
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if(hoveringL) {
+                    sb.shipX = 400;
+                    sb.shipY = 400;
+                    sb.rotationDeg = 0.0;
+                    sb.previous = 0;
+                    sb.current = 0;
+                    sb.diff = 0;
+                    sb.lcount = 0;
+                    sb.rcount = 0;
+                    sb.ucount = 0;
+                    sb.scount = 0;
+                    sb.velocityX = 0;
+                    sb.velocityY = 0;
+                    sb.playerHealth = 250;
+                    sb.stage = 1;
+                    sb.enemiesLeft = 6;
+                    sb.torpedoes = new ArrayList<>();
+                    sb.torpedoes2 = new ArrayList<>();
+                    sb.enemies = new ArrayList<>();
+                    sb.addShip();
+                    sb.initialize();
+                    showPanel("sb");
+                    hoveringL = false;
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                int mouseX = e.getX();
+                int mouseY = e.getY();
+                if(mouseX >= 370 && mouseX <= 480 && mouseY >= 655 && mouseY <= 710) hoveringL = true;
+                else hoveringL = false;
             }
         }
         // this method is called whenever the user drags their mouse on the screen (currently empty)
@@ -1428,8 +1798,8 @@ class VPanel extends JPanel {
         public void mouseMoved(MouseEvent e) {
             int x_coord = e.getX();
             int y_coord = e.getY();
-            if(instructions && x_coord >= 660 && x_coord <= 760 && y_coord >= 650 && y_coord <= 710) nextColor = GOLD2;
-            else nextColor = GOLD;
+            if(instructions && x_coord >= 610 && x_coord <= 760 && y_coord >= 650 && y_coord <= 710) hovering = true;
+            else hovering = false;
             repaint();
         }
         // This class contains all variables and methods required to draw a torpedo
