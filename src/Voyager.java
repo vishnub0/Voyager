@@ -12,6 +12,7 @@ import java.io.*;
 import java.util.ArrayList;
 
 import java.util.Random;
+import java.util.Scanner;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -56,6 +57,9 @@ class VPanel extends JPanel {
     Level1 level1;
     Image sadJoe;
     Cutscene1 cutscene1;
+    Cutscene2 cutscene2;
+    Cutscene3 cutscene3;
+    Credits credits;
     public static SaveFile sf = SaveFile.load();
     // This is the constructor which sets the background and layout of the VPanel. It also calls the run method.
     public VPanel() {
@@ -70,8 +74,8 @@ class VPanel extends JPanel {
     }
     // This is the run method which creates Panels for each of the levels and adds them to the VPanel.
     public void run() {
-        //Scene1 sc1 = new Scene1();
-        //add(sc1);
+        Scene1 sc1 = new Scene1();
+        add(sc1);
         homepage = new Homepage();
         homepage.setBackground(Color.BLACK);
         add(homepage, "homepage");
@@ -81,8 +85,16 @@ class VPanel extends JPanel {
         add(cutscene1, "cutscene1");
         level1 = new Level1();
         add(level1, "l1");
+        cutscene2 = new Cutscene2();
+        add(cutscene2, "cutscene2");
         Level2 level2 = new Level2();
         add(level2, "l2");
+        cutscene3 = new Cutscene3();
+        add(cutscene3, "cutscene3");
+        Level3 level3 = new Level3();
+        add(level3, "l3");
+        credits = new Credits();
+        add(credits, "credits");
         sadJoe = new ImageIcon("sadjoe.png").getImage();
     }
     // This class represents a star in my background. It has all the variables and methods needed to draw the star.
@@ -144,6 +156,11 @@ class VPanel extends JPanel {
         catch(Exception e) {
             System.exit(1);
         }
+    }
+    // method to diss the user by playing a JoeTTS insult
+    public void diss() {
+        int rand = (int)(Math.random()*3) + 1;
+        playMusic("diss" + rand + ".wav", false);
     }
     // This method is used to update the font size of STF, my custom Star Trek font given the size param
     public void getSTF(float size) {
@@ -212,7 +229,6 @@ class VPanel extends JPanel {
             LetHandler lh = new LetHandler();
             Timer letTimer = new Timer(10 , lh);
             letTimer.start();
-            //playMusic("theme.wav", true);
         }
         // This is the pC for homepage which draws all the components of the homepage along with updating ArrayLists.
         public void paintComponent(Graphics g) {
@@ -308,7 +324,7 @@ class VPanel extends JPanel {
     // This is the JPanel used to select the level to play, contains everything required to draw it
     class Levels extends JPanel implements MouseListener, MouseMotionListener {
         Image lock = new ImageIcon("lock.png").getImage();
-        boolean hovering1 = false, hovering2 = false;
+        boolean hovering1 = false, hovering2 = false, hovering3 = false;
         // Constructor used to set background of level page and add mouse listener
         public Levels() {
             setBackground(Color.BLACK);
@@ -343,6 +359,16 @@ class VPanel extends JPanel {
             g.setColor(GOLD);
             g.drawString("2", 550, 430);
             if(level < 2) g.drawImage(lock, 500, 300, 150, 150, null);
+            if (hovering3) {
+                g.setColor(AZURE);
+                g.fillRect(320, 495, 160, 160);
+            } else {
+                g.setColor(SILVER);
+                g.fillRect(325, 500, 150, 150);
+            }
+            g.setColor(GOLD);
+            g.drawString("3", 375, 630);
+            if(level < 3) g.drawImage(lock, 325, 500, 150, 150, null);
         }
         // this method is called whenever the user clicks their mouse (currently empty)
         @Override
@@ -360,8 +386,13 @@ class VPanel extends JPanel {
                 cutscene1.scene01.textTimer.start();
                 hovering1 = false;
             } else if(x_coord >= 500 && x_coord <= 650 && y_coord >= 300 && y_coord <= 450 && sf.level >= 2) {
-                showPanel("l2");
+                showPanel("cutscene2");
+                cutscene2.scene01.textTimer.start();
                 hovering2 = false;
+            } else if(x_coord >= 325 && x_coord <= 475 && y_coord >= 500 && y_coord <= 650 && sf.level >= 3) {
+                showPanel("cutscene3");
+                cutscene3.scene01.textTimer.start();
+                hovering3 = false;
             }
         }
         // this method is called whenever the user releases their mouse (currently empty)
@@ -393,6 +424,8 @@ class VPanel extends JPanel {
             else hovering1 = false;
             if(x_coord >= 500 && x_coord <= 650 && y_coord >= 300 && y_coord <= 450 && sf.level >= 2) hovering2 = true;
             else hovering2 = false;
+            if(x_coord >= 325 && x_coord <= 475 && y_coord >= 500 && y_coord <= 650 && sf.level >= 3) hovering3 = true;
+            else hovering3 = false;
         }
     }
     // This is the JPanel for the first cutscene of the game
@@ -1024,6 +1057,7 @@ class VPanel extends JPanel {
                                 } else if (lives <= 0) {
                                     stopAll();
                                     showPanel("lose");
+                                    diss();
                                 }
                             }
                             e2.check();
@@ -1131,7 +1165,10 @@ class VPanel extends JPanel {
             @Override
             public void keyPressed(KeyEvent e) {
                 int keycode = e.getKeyCode();
-                if(keycode == 32) nextPanel();
+                if(keycode == 32) {
+                    nextPanel();
+                    cutscene2.scene01.textTimer.start();
+                }
             }
             // this method is called whenever the user releases a key on the SWin panel (currently empty)
             @Override
@@ -1267,6 +1304,254 @@ class VPanel extends JPanel {
             if(instructions && x_coord >= 610 && x_coord <= 760 && y_coord >= 650 && y_coord <= 710) hovering = true;
             else hovering = false;
             repaint();
+        }
+    }
+    // This is the JPanel for the second cutscene of the game
+    class Cutscene2 extends JPanel {
+        CardLayout clc1;
+        Scene01 scene01;
+        Scene02 scene02;
+        Scene03 scene03;
+        Scene04 scene04;
+        Scene05 scene05;
+        Scene06 scene06;
+        Scene07 scene07;
+        // constructor which creates all of the
+        public Cutscene2() {
+            clc1 = new CardLayout();
+            setLayout(clc1);
+            scene01 = new Scene01();
+            add(scene01, "sc1");
+            scene02 = new Scene02();
+            add(scene02, "sc2");
+            scene03 = new Scene03();
+            add(scene03, "sc3");
+            scene04 = new Scene04();
+            add(scene04, "sc4");
+            scene05 = new Scene05();
+            add(scene05, "sc5");
+            scene06 = new Scene06();
+            add(scene06, "sc6");
+            scene07 = new Scene07();
+            add(scene07, "sc7");
+        }
+        // method to go to the next panel in the cardlayout.
+        public void nextPanel(int scene) {
+            clc1.next(this);
+            if(scene == 2) scene02.textTimer.start();
+            else if(scene == 3) scene03.textTimer.start();
+            else if(scene == 4) scene04.textTimer.start();
+            else if(scene == 5) scene05.textTimer.start();
+            else if(scene == 6) scene06.textTimer.start();
+            else if(scene == 7) scene07.textTimer.start();
+        }
+        // class for the first scene in the cutscene where Kirk congratulates spock
+        class Scene01 extends JPanel {
+            String text = "Good work Spock!               ";
+            String displayedText = "";
+            JTextArea bubble = new JTextArea();
+            Timer textTimer;
+            // constructor that creates the timer needed to display the text
+            public Scene01() {
+                setLayout(null);
+                setBackground(Color.LIGHT_GRAY);
+                bubble.setBounds(10, 10, 200, 20);
+                add(bubble);
+                textTimer = new Timer(50, e -> {
+                    if(displayedText.length() < text.length()) {
+                        displayedText = text.substring(0, displayedText.length() + 1);
+                        bubble.setText(displayedText);
+                    } else {
+                        nextPanel(2);
+                        textTimer.stop();
+                    }
+                    repaint();
+                });
+            }
+            // paintComponent which draws the image of captain kirk smiling
+            public void paintComponent(Graphics g) {
+                grabFocus();
+                super.paintComponent(g);
+                g.drawImage(new ImageIcon("kirk2.jpeg").getImage(), 0, 0, 800, 800, null);
+            }
+        }
+        // class for the second scene where spock smiles
+        class Scene02 extends JPanel {
+            String text = "                                             ";
+            String displayedText = "";
+            JTextArea bubble = new JTextArea();
+            Timer textTimer;
+            // constructor that creates the timer needed to display the text
+            public Scene02() {
+                setLayout(null);
+                setBackground(Color.LIGHT_GRAY);
+                bubble.setBounds(10, 10, 270, 200);
+                textTimer = new Timer(50, e -> {
+                    if(displayedText.length() < text.length()) {
+                        displayedText = text.substring(0, displayedText.length() + 1);
+                        bubble.setText(displayedText);
+                    } else {
+                        nextPanel(3);
+                        textTimer.stop();
+                    }
+                    repaint();
+                });
+            }
+            // paintComponent which draws the image of captain kirk on the screen
+            public void paintComponent(Graphics g) {
+                grabFocus();
+                super.paintComponent(g);
+                g.drawImage(new ImageIcon("spocksmile.jpeg").getImage(), 0, 0, 800, 800, null);
+            }
+        }
+        // class for the third scene where the cell phone rings
+        class Scene03 extends JPanel {
+            String text = "                                   ";
+            String displayedText = "";
+            JTextArea bubble = new JTextArea();
+            Timer textTimer;
+            // constructor that creates the timer needed to display the text
+            public Scene03() {
+                setLayout(null);
+                setBackground(Color.LIGHT_GRAY);
+                bubble.setBounds(10, 10, 100, 20);
+                textTimer = new Timer(50, e -> {
+                    if(displayedText.length() < text.length()) {
+                        displayedText = text.substring(0, displayedText.length() + 1);
+                        bubble.setText(displayedText);
+                    } else {
+                        nextPanel(4);
+                        textTimer.stop();
+                    }
+                    repaint();
+                });
+            }
+            // paintComponent which draws the image of the cell phone
+            public void paintComponent(Graphics g) {
+                grabFocus();
+                super.paintComponent(g);
+                g.drawImage(new ImageIcon("cellphone.png").getImage(), 200, 200, 354, 400, null);
+            }
+        }
+        // class for the fourth scene where kirk learns about the Klingons.
+        class Scene04 extends JPanel {
+            String text = "Captain James T. Kirk here.\nWHAT? THE KLINGONS ARE \nATTACKING? What do we do?\n We still need to finish with\nthe Gorn!     ";
+            String displayedText = "";
+            JTextArea bubble = new JTextArea();
+            Timer textTimer;
+            // constructor that creates the timer needed to display the text
+            public Scene04() {
+                setLayout(null);
+                setBackground(Color.LIGHT_GRAY);
+                bubble.setBounds(10, 10, 230, 100);
+                add(bubble);
+                textTimer = new Timer(50, e -> {
+                    if(displayedText.length() < text.length()) {
+                        displayedText = text.substring(0, displayedText.length() + 1);
+                        bubble.setText(displayedText);
+                    } else {
+                        nextPanel(5);
+                        textTimer.stop();
+                    }
+                    repaint();
+                });
+            }
+            // paintComponent which draws the image of surprised kirk
+            public void paintComponent(Graphics g) {
+                grabFocus();
+                super.paintComponent(g);
+                g.drawImage(new ImageIcon("kirk3.jpeg").getImage(), 0, 0, 800, 800, null);
+            }
+        }
+        // class for the fifth scene where Sulu is introduced
+        class Scene05 extends JPanel {
+            String text = "Leave it to me captain.                         ";
+            String displayedText = "";
+            JTextArea bubble = new JTextArea();
+            Timer textTimer;
+            // constructor that creates the timer needed to display the text
+            public Scene05() {
+                setLayout(null);
+                setBackground(Color.LIGHT_GRAY);
+                bubble.setBounds(10, 600, 230, 50);
+                add(bubble);
+                textTimer = new Timer(50, e -> {
+                    if(displayedText.length() < text.length()) {
+                        displayedText = text.substring(0, displayedText.length() + 1);
+                        bubble.setText(displayedText);
+                    } else {
+                        nextPanel(6);
+                        textTimer.stop();
+                    }
+                    repaint();
+                });
+            }
+            // paintComponent which draws the image of sulu
+            public void paintComponent(Graphics g) {
+                grabFocus();
+                super.paintComponent(g);
+                g.drawImage(new ImageIcon("sulu1.jpeg").getImage(), 0, 0, 800, 800, null);
+            }
+        }
+        // class for the sixth scene where kirk is very happy to see sulu.
+        class Scene06 extends JPanel {
+            String text = "SULU!! Perfect timing! I know\nI can trust you with this job!                         ";
+            String displayedText = "";
+            JTextArea bubble = new JTextArea();
+            Timer textTimer;
+            // constructor that creates the timer needed to display the text
+            public Scene06() {
+                setLayout(null);
+                setBackground(Color.LIGHT_GRAY);
+                bubble.setBounds(500, 10, 230, 70);
+                add(bubble);
+                textTimer = new Timer(50, e -> {
+                    if(displayedText.length() < text.length()) {
+                        displayedText = text.substring(0, displayedText.length() + 1);
+                        bubble.setText(displayedText);
+                    } else {
+                        nextPanel(7);
+                        textTimer.stop();
+                    }
+                    repaint();
+                });
+            }
+            // paintComponent which draws the image of happy kirk
+            public void paintComponent(Graphics g) {
+                grabFocus();
+                super.paintComponent(g);
+                g.drawImage(new ImageIcon("kirk4.jpeg").getImage(), 0, 0, 800, 800, null);
+            }
+        }
+        // class for the seventh scene where sulu is in the enterprise.
+        class Scene07 extends JPanel {
+            String text = "Time for some obliteration.                    ";
+            String displayedText = "";
+            JTextArea bubble = new JTextArea();
+            Timer textTimer;
+            // constructor that creates the timer needed to display the text
+            public Scene07() {
+                setLayout(null);
+                setBackground(Color.LIGHT_GRAY);
+                bubble.setBounds(10, 10, 230, 50);
+                add(bubble);
+                textTimer = new Timer(50, e -> {
+                    if(displayedText.length() < text.length()) {
+                        displayedText = text.substring(0, displayedText.length() + 1);
+                        bubble.setText(displayedText);
+                    } else {
+                        showPanel("l2");
+                        textTimer.stop();
+                    }
+                    repaint();
+                });
+            }
+            // paintComponent which draws the image of sulu in the enterprise
+            public void paintComponent(Graphics g) {
+                grabFocus();
+                super.paintComponent(g);
+                g.drawImage(new ImageIcon("sulu2.jpeg").getImage(), 0, 0, 800, 800, null);
+            }
         }
     }
     // This is the JPanel for the second level and contains all the methods and variables to draw the level.
@@ -1567,6 +1852,7 @@ class VPanel extends JPanel {
                         if(playerHealth == 0) {
                             stopAll();
                             showPanel("lose");
+                            diss();
                         }
                         return true;
                     }
@@ -1586,6 +1872,7 @@ class VPanel extends JPanel {
                         playerHealth = 0;
                         stopAll();
                         showPanel("lose");
+                        diss();
                         break;
                     }
                 }
@@ -1684,10 +1971,11 @@ class VPanel extends JPanel {
             }
         }
         // This is the page the user is transported to if they win the space battle
-        class WinPanel extends JPanel {
+        class WinPanel extends JPanel implements KeyListener {
             // this is the constructor of the win panel which sets the background to black
             public WinPanel() {
                 setBackground(Color.BLACK);
+                addKeyListener(this);
             }
             // this is the pC of the win panel which displays the text "You win!" in STF
             public void paintComponent(Graphics g) {
@@ -1697,6 +1985,28 @@ class VPanel extends JPanel {
                 g.setFont(stf);
                 g.setColor(GOLD);
                 g.drawString("You win!", 375, 400);
+                g.drawString("PRESS SPACE TO CONTINUE", 200, 700);
+                sf.level = 3;
+                sf.save();
+            }
+
+            @Override
+            public void keyTyped(KeyEvent e) {
+
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                int keycode = e.getKeyCode();
+                if(keycode == KeyEvent.VK_SPACE) {
+                    nextPanel();
+                    cutscene3.scene01.textTimer.start();
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+
             }
         }
         // This is the page the user is transported to if they lose the space battle
@@ -1861,6 +2171,680 @@ class VPanel extends JPanel {
         // this method is called whenever the user's mouse exits the screen (currently empty)
         @Override
         public void mouseExited(MouseEvent e) {
+        }
+    }
+    // This is the JPanel for the third cutscene of the game
+    class Cutscene3 extends JPanel {
+        CardLayout clc1;
+        Scene01 scene01;
+        Scene02 scene02;
+        Scene03 scene03;
+        Scene04 scene04;
+        Scene05 scene05;
+        // constructor which creates all the scenes
+        public Cutscene3() {
+            clc1 = new CardLayout();
+            setLayout(clc1);
+            scene01 = new Scene01();
+            add(scene01, "sc1");
+            scene02 = new Scene02();
+            add(scene02, "sc2");
+            scene03 = new Scene03();
+            add(scene03, "sc3");
+            scene04 = new Scene04();
+            add(scene04, "sc4");
+            scene05 = new Scene05();
+            add(scene05, "sc5");
+        }
+        // method to go to the next panel in the cardlayout.
+        public void nextPanel(int scene) {
+            clc1.next(this);
+            if(scene == 2) scene02.textTimer.start();
+            else if(scene == 3) scene03.textTimer.start();
+            else if(scene == 4) scene04.textTimer.start();
+            else if(scene == 5) scene05.textTimer.start();
+        }
+        // class for the first scene in the cutscene where Kirk is crying happy tears
+        class Scene01 extends JPanel {
+            String text = "Sulu! Thank god you came\nback safe!               ";
+            String displayedText = "";
+            JTextArea bubble = new JTextArea();
+            Timer textTimer;
+            // constructor that creates the timer needed to display the text
+            public Scene01() {
+                setLayout(null);
+                setBackground(Color.LIGHT_GRAY);
+                bubble.setBounds(10, 10, 200, 50);
+                add(bubble);
+                textTimer = new Timer(50, e -> {
+                    if(displayedText.length() < text.length()) {
+                        displayedText = text.substring(0, displayedText.length() + 1);
+                        bubble.setText(displayedText);
+                    } else {
+                        nextPanel(2);
+                        textTimer.stop();
+                    }
+                    repaint();
+                });
+            }
+            // paintComponent which draws the image of captain kirk crying happy tears
+            public void paintComponent(Graphics g) {
+                grabFocus();
+                super.paintComponent(g);
+                g.drawImage(new ImageIcon("kirk5.jpeg").getImage(), 0, 0, 800, 800, null);
+            }
+        }
+        // class for the second scene where sulu smiles
+        class Scene02 extends JPanel {
+            String text = "                                             ";
+            String displayedText = "";
+            JTextArea bubble = new JTextArea();
+            Timer textTimer;
+            // constructor that creates the timer needed to display the text
+            public Scene02() {
+                setLayout(null);
+                setBackground(Color.LIGHT_GRAY);
+                bubble.setBounds(10, 10, 270, 200);
+                textTimer = new Timer(50, e -> {
+                    if(displayedText.length() < text.length()) {
+                        displayedText = text.substring(0, displayedText.length() + 1);
+                        bubble.setText(displayedText);
+                    } else {
+                        nextPanel(3);
+                        textTimer.stop();
+                    }
+                    repaint();
+                });
+            }
+            // paintComponent which draws the image of sulu on the screen
+            public void paintComponent(Graphics g) {
+                grabFocus();
+                super.paintComponent(g);
+                g.drawImage(new ImageIcon("sulu3.jpeg").getImage(), 0, 0, 800, 800, null);
+            }
+        }
+        // class for the third scene where kirk thinks about khan
+        class Scene03 extends JPanel {
+            String text = "But now it is my turn. I\nmust confront my nemesis.                    ";
+            String displayedText = "";
+            JTextArea bubble = new JTextArea();
+            Timer textTimer;
+            // constructor that creates the timer needed to display the text
+            public Scene03() {
+                setLayout(null);
+                setBackground(Color.LIGHT_GRAY);
+                bubble.setBounds(10, 10, 230, 50);
+                add(bubble);
+                textTimer = new Timer(50, e -> {
+                    if(displayedText.length() < text.length()) {
+                        displayedText = text.substring(0, displayedText.length() + 1);
+                        bubble.setText(displayedText);
+                    } else {
+                        nextPanel(4);
+                        textTimer.stop();
+                    }
+                    repaint();
+                });
+            }
+            // paintComponent which draws the image of kirk thinking
+            public void paintComponent(Graphics g) {
+                grabFocus();
+                super.paintComponent(g);
+                g.drawImage(new ImageIcon("kirk6.jpeg").getImage(), 0, 0, 800, 800, null);
+            }
+        }
+        // class for the fourth scene with khan
+        class Scene04 extends JPanel {
+            String text = "Khan.                         ";
+            String displayedText = "";
+            JTextArea bubble = new JTextArea();
+            Timer textTimer;
+            // constructor that creates the timer needed to display the text
+            public Scene04() {
+                setLayout(null);
+                setBackground(Color.LIGHT_GRAY);
+                bubble.setBounds(10, 10, 230, 20);
+                add(bubble);
+                textTimer = new Timer(50, e -> {
+                    if(displayedText.length() < text.length()) {
+                        displayedText = text.substring(0, displayedText.length() + 1);
+                        bubble.setText(displayedText);
+                    } else {
+                        nextPanel(5);
+                        textTimer.stop();
+                    }
+                    repaint();
+                });
+            }
+            // paintComponent which draws the image of khan
+            public void paintComponent(Graphics g) {
+                grabFocus();
+                super.paintComponent(g);
+                g.drawImage(new ImageIcon("khan1.jpeg").getImage(), 0, 0, 800, 800, null);
+            }
+        }
+        // class for the fifth scene where kirk talks about defeating khan
+        class Scene05 extends JPanel {
+            String text = "I will train and defeat him\nin a duel. I will restore\npeace to the galaxy.                    ";
+            String displayedText = "";
+            JTextArea bubble = new JTextArea();
+            Timer textTimer;
+            // constructor that creates the timer needed to display the text
+            public Scene05() {
+                setLayout(null);
+                setBackground(Color.LIGHT_GRAY);
+                bubble.setBounds(10, 10, 230, 75);
+                add(bubble);
+                textTimer = new Timer(50, e -> {
+                    if(displayedText.length() < text.length()) {
+                        displayedText = text.substring(0, displayedText.length() + 1);
+                        bubble.setText(displayedText);
+                    } else {
+                        showPanel("l3");
+                        textTimer.stop();
+                    }
+                    repaint();
+                });
+            }
+            // paintComponent which draws the image of kirk
+            public void paintComponent(Graphics g) {
+                grabFocus();
+                super.paintComponent(g);
+                g.drawImage(new ImageIcon("kirk7.jpeg").getImage(), 0, 0, 800, 800, null);
+            }
+        }
+    }
+    // This is the JPanel for the third level and contains all the methods and variables to draw the level.
+    class Level3 extends JPanel implements MouseListener, MouseMotionListener {
+        CardLayout cl4;
+        Bossfight bf;
+        boolean hovering = false;
+        boolean instructions = true;
+        WinPanel wp;
+        public Level3() {
+            setBackground(Color.BLACK);
+            cl4 = new CardLayout();
+            setLayout(cl4);
+            addMouseListener(this);
+            addMouseMotionListener(this);
+            runL3();
+        }
+        public void runL3() {
+            Instructions instructions = new Instructions();
+            add(instructions, "instructions");
+            bf = new Bossfight();
+            add(bf, "boss");
+            wp = new WinPanel();
+            add(wp, "win");
+            LosePanel lose = new LosePanel();
+            add(lose, "lose");
+        }
+        // method used to show a panel in the cardlayout
+        public void showPanel(String name) {
+            cl4.show(this, name);
+        }
+        // this is the class for the instructions for level 3
+        class Instructions extends JPanel {
+            // this is the constructor of the instructions panel which sets the background and adds the listeners
+            public Instructions() {
+                setBackground(Color.BLACK);
+            }
+            // this pC is used to teach the user how to play the third level
+            public void paintComponent(Graphics g) {
+                getSTF(40f);
+                g.setColor(GOLD);
+                g.setFont(stf);
+                g.drawString("INSTRUCTIONS: KEYBOARD MASHER", 160, 45);
+                g.drawString("OBJECTIVE: OBTAIN A SCORE OF 4500+", 140, 130);
+                getSTF(35f);
+                g.drawString("Press c to jab, x to hook", 50, 300);
+                g.drawString("For every hit you land", 50, 375);
+                g.drawString("your score increases", 50, 420);
+                g.drawString("You have 20 seconds to", 50, 465);
+                g.drawString("score 4500+", 50, 505);
+                g.drawString("Hooks are stronger than jabs,", 50, 575);
+                g.drawString("they increase your score more", 50, 620);
+                g.drawString("Don't push the punching bag", 50, 695);
+                g.drawString("away from you!", 50, 735);
+                g.drawImage(new ImageIcon("jab.png").getImage(), 450, 140, 200, 200, null);
+                g.drawImage(new ImageIcon("hook.png").getImage(), 655, 140, 200, 200, null);
+                g.drawImage(new ImageIcon("punchingbag.png").getImage(), 600, 320, 60, 300, null);
+                getSTF(40f);
+                g.setFont(stf);
+                if(hovering) {
+                    g.setColor(AZURE);
+                    g.fillRect(605, 645, 160, 70);
+                } else {
+                    g.setColor(SILVER);
+                    g.fillRect(610, 650, 150, 60);
+                }
+                g.setColor(GOLD);
+                g.drawString("CONTINUE", 620, 700);
+            }
+        }
+        // This is the class that draws the actual bossfight
+        class Bossfight extends JPanel implements KeyListener {
+            Image[] sprites = new Image[6];
+            Image training;
+            int currentIndex = 0;
+            Timer actTimer, rotTimer;
+            Kirk kirk = new Kirk();
+            double kirkX = 300, kirkY = 500;
+            boolean moveDone = true;
+            Image punchingBag = load("punchingbag", 1);
+            double pb_rotDeg = 0;
+            double ang_vel = 0;
+            final double AIR_RESISTANCE = 0.97;
+            long lastHit = -1;
+            int score = 0;
+            double timeLeft = 20.0;
+            Timer countdown;
+            // constructor that sets the background, adds the KeyListener, and loads all the sprite images
+            public Bossfight() {
+                setBackground(Color.PINK);
+                addKeyListener(this);
+                sprites[0] = load("standing", 1);
+                sprites[1] = load("jumping", 1);
+                sprites[2] = load("jab", 1);
+                sprites[3] = load("hook", 1);
+                training = load("training", 3);
+                actTimer = new Timer(10, new ActHandler());
+                rotTimer = new Timer(16, e -> {
+                    pb_rotDeg += ang_vel * AIR_RESISTANCE * 0.016;
+                    if(pb_rotDeg > 0) ang_vel -= 1;
+                    else if(pb_rotDeg < 0) ang_vel += 1;
+                    repaint();
+                });
+                countdown = new Timer(100, e -> {
+                    timeLeft -= 0.1;
+                    if(timeLeft <= 0) {
+                        stopAll();
+                        if(score >= 4500) {
+                            showPanel("win");
+                            wp.reached = true;
+                        }
+                        else {
+                            showPanel("lose");
+                            diss();
+                        }
+                    }
+                    repaint();
+                });
+            }
+            // method that is used to start all timers when the user goes to the screen
+            public void init() {
+                actTimer.start();
+                rotTimer.start();
+                countdown.start();
+            }
+            // method that is used to stop all the active timers
+            public void stopAll() {
+                actTimer.stop();
+                rotTimer.stop();
+                countdown.stop();
+            }
+            // handler class that is used to determine the appropriate user sprite
+            class ActHandler implements ActionListener {
+                // method that constantly checks which user sprite should be drawn on the screen
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    long current = System.currentTimeMillis();
+                    if(currentIndex == 1 || currentIndex == 4) {
+                        if(current - kirk.timeSinceMove <= 1000) {
+                            kirkY = 500 - 200 * Math.sin(Math.PI * (current - kirk.timeSinceMove) / 1000);
+                        } else {
+                            currentIndex = 0;
+                            moveDone = true;
+                        }
+                    } else if(currentIndex == 2) {
+                        if(current - kirk.timeSinceMove > 125) {
+                            currentIndex = 0;
+                            moveDone = true;
+                        }
+                    } else if(currentIndex == 3) {
+                        if(current - kirk.timeSinceMove > 175) {
+                            currentIndex = 0;
+                            moveDone = true;
+                        }
+                    } else {
+                        currentIndex = 0;
+                    }
+                    repaint();
+                }
+            }
+            // method that is used to quickly load all the images required
+            public Image load(String filename, int type) {
+                String extension = "";
+                if(type == 1) extension = ".png";
+                else if(type == 2) extension = ".jpg";
+                else if(type == 3) extension = ".jpeg";
+                return new ImageIcon(filename + extension).getImage();
+            }
+            public void paintComponent(Graphics g) {
+                grabFocus();
+                super.paintComponent(g);
+                g.drawImage(training, 0, 0, 800, 800, null);
+                g.drawImage(sprites[currentIndex], (int)kirkX, (int)kirkY, 250, 250, null);
+                drawPB(g);
+                getSTF(35f);
+                g.setFont(stf);
+                g.setColor(GOLD);
+                g.drawString("Time left: " + Math.round(timeLeft*10)/10.0, 100, 50);
+                g.drawString("Score: " + score, 500, 50);
+                ((Graphics2D)g).setStroke(new BasicStroke(1));
+            }
+            // this method is used to draw the punching bag on the screen
+            public void drawPB(Graphics g) {
+                try {
+                    Graphics2D g2d = (Graphics2D) g;
+                    g2d.rotate(Math.toRadians(pb_rotDeg), 445, 260);
+                    g2d.drawImage(punchingBag, 400, 260, 90, 450, null);
+                    g2d.rotate(-Math.toRadians(pb_rotDeg), 445, 260);
+                } catch (Exception e) {
+                    throw new RuntimeException();
+                }
+            }
+
+            class Kirk {
+                long timeSinceMove = 0;
+                // method used to move the player
+                public void move(int right) {
+                    double distance = kirkX - 100;
+                    if(right == 1) {
+                        if (distance >= 20 && kirkX + 20 <= 700) kirkX += 20;
+                        else if(distance < 20 && kirkX + distance <= 700) kirkX += distance;
+                    }
+                    else {
+                        if(kirkX - 20 >= 0) kirkX -= 20;
+                    }
+                    currentIndex = 0;
+                    timeSinceMove = System.currentTimeMillis();
+                }
+                // jump move of the player
+                public void jump() {
+                    currentIndex = 1;
+                    timeSinceMove = System.currentTimeMillis();
+                    moveDone = false;
+                }
+                // first move of the player
+                public void jab() {
+                    currentIndex = 2;
+                    timeSinceMove = System.currentTimeMillis();
+                    moveDone = false;
+                    boolean blocked = (int)(Math.random() * 10) + 1 < 7;
+                    if (!blocked) {
+                        lastHit = System.currentTimeMillis();
+                        attack(100);
+                    }
+                }
+                // second move of the player
+                public void hook() {
+                    currentIndex = 3;
+                    timeSinceMove = System.currentTimeMillis();
+                    moveDone = false;
+                    boolean blocked = (int)(Math.random() * 10) + 1 < 5;
+                    if(!blocked) {
+                        attack(150);
+                    }
+                }
+            }
+            public void attack(int type) {
+                if(kirkX - 400 < 20 && Math.abs(pb_rotDeg) <= 20) {
+                    ang_vel -= 10;
+                    score += type;
+                    repaint();
+                }
+            }
+
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
+            @Override
+            public void keyPressed(KeyEvent e) {
+                int keycode = e.getKeyCode();
+                if(moveDone) {
+                    //dist = Math.abs(kirkX + 100 - khanX);
+                    switch(keycode) {
+                        case KeyEvent.VK_UP -> kirk.jump();
+                        case KeyEvent.VK_RIGHT -> kirk.move(1);
+                        case KeyEvent.VK_LEFT -> kirk.move(-1);
+                        case 67 -> kirk.jab();
+                        case 88 -> kirk.hook();
+                    }
+                }
+                repaint();
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+
+            }
+        }
+        // this is the panel the user is transported to if they win the bossfight
+        class WinPanel extends JPanel {
+            boolean switched = false;
+            boolean reached = false;
+            // this is the constructor of the win panel which sets the background to black
+            public WinPanel() {
+                setBackground(Color.BLACK);
+                Timer t = new Timer(5000, e -> {
+                    if(!switched && reached) {
+                        nextPanel();
+                        credits.init();
+                        switched = true;
+                    }
+                });
+                t.start();
+            }
+            // this is the pC of the win panel which displays the text "You win!" in STF
+            public void paintComponent(Graphics g) {
+                grabFocus();
+                super.paintComponent(g);
+                g.drawImage(new ImageIcon("kirk8.jpeg").getImage(), 0, 0, 800, 800, null);
+                getSTF(35f);
+                g.setFont(stf);
+                g.setColor(GOLD);
+                g.drawString("You win!", 100, 100);
+            }
+        }
+        // this is the panel the user is transported to if they lose the bossfight
+        class LosePanel extends JPanel implements MouseListener, MouseMotionListener {
+            boolean hoveringL = false;
+            // this is the constructor of the lose panel which sets the background to black
+            public LosePanel() {
+                setBackground(Color.BLACK);
+                addMouseListener(this);
+                addMouseMotionListener(this);
+            }
+            // this is the pC of the lose panel which displays the text "You win!" in STF
+            public void paintComponent(Graphics g) {
+                grabFocus();
+                super.paintComponent(g);
+                g.drawImage(sadJoe, 100, 200, 600, 600, null);
+                getSTF(35f);
+                g.setFont(stf);
+                if(hoveringL) {
+                    g.setColor(AZURE);
+                    g.fillRect(365, 650, 120, 65);
+                } else {
+                    g.setColor(SILVER);
+                    g.fillRect(370, 655, 110, 55);
+                }
+                g.setColor(GOLD);
+                g.drawString("You lose!", 200, 150);
+                g.drawString("Retry", 380, 700);
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if(hoveringL) {
+                    bf.currentIndex = 0;
+                    bf.kirkX = 300;
+                    bf.kirkY = 500;
+                    bf.moveDone = true;
+                    bf.pb_rotDeg = 0;
+                    bf.ang_vel = 0;
+                    bf.lastHit = -1;
+                    bf.score = 0;
+                    bf.timeLeft = 20;
+                    bf.init();
+                    showPanel("boss");
+                    hoveringL = false;
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                int mouseX = e.getX();
+                int mouseY = e.getY();
+                if(mouseX >= 370 && mouseX <= 480 && mouseY >= 655 && mouseY <= 710) hoveringL = true;
+                else hoveringL = false;
+            }
+        }
+        // this method is called whenever the user clicks their mouse (currently empty)
+        @Override
+        public void mouseClicked(MouseEvent e) {
+
+        }
+        // this method checks if the user presses the continue button and switches the JPanel
+        @Override
+        public void mousePressed(MouseEvent e) {
+            if(instructions && hovering) {
+                cl4.next(this);
+                bf.init();
+                instructions = false;
+                hovering = false;
+            }
+        }
+        // this method is called whenever the user releases their mouse (currently empty)
+        @Override
+        public void mouseReleased(MouseEvent e) {
+
+        }
+        // this method is called whenever the user's mouse enters the screen (currently empty)
+        @Override
+        public void mouseEntered(MouseEvent e) {
+
+        }
+        // this method is called whenever the user's mouse exits the screen (currently empty)
+        @Override
+        public void mouseExited(MouseEvent e) {
+
+        }
+        // this method is called whenever the user drags their mouse (currently empty)
+        @Override
+        public void mouseDragged(MouseEvent e) {
+
+        }
+        // this method checks if the user is hovering over the continue button on the instructions page
+        @Override
+        public void mouseMoved(MouseEvent e) {
+            int x_coord = e.getX();
+            int y_coord = e.getY();
+            if(instructions && x_coord >= 610 && x_coord <= 760 && y_coord >= 650 && y_coord <= 710) hovering = true;
+            else hovering = false;
+            repaint();
+        }
+    }
+    // this class is used to display the credits on the screen.
+    class Credits extends JPanel {
+        int y_coord = 830;
+        Timer credTimer;
+        ArrayList<String> creds = new ArrayList<>();
+        Scanner input, input2;
+        Font stf;
+        final Color GOLD = new Color(211, 142, 38);
+        Clip clip;
+        JFrame transcript;
+        // constructor that sets the background, reads the text files, and creates a transcript jpanel
+        public Credits() {
+            setBackground(Color.BLACK);
+            tryCatchIt();
+            while(input.hasNext()) creds.add(input.nextLine());
+            input.close();
+            credTimer = new Timer(25, e -> {y_coord--; repaint();});
+            transcript = new JFrame("Java Life");
+            transcript.setSize(600, 600);
+            transcript.setLocation(950, 100);
+            transcript.setResizable(false);
+            transcript.add(new Transcript());
+        }
+        // method to start playing the credits
+        public void init() {
+            credTimer.start();
+            transcript.setVisible(true);
+            playMusic("javalife.wav", false);
+        }
+        // Transcript jpanel which draws java life transcript on the screen.
+        class Transcript extends JPanel {
+            String text;
+            JTextArea trans;
+            JScrollPane pane;
+            // constructor which sets the background and reads the transcript.txt file
+            public Transcript() {
+                setBackground(Color.BLACK);
+                setLayout(null);
+                while(input2.hasNext()) text += input2.nextLine() + "\n";
+                input2.close();
+                trans = new JTextArea(text.substring(4));
+                trans.setBackground(GOLD);
+                getSTF(20f);
+                trans.setFont(stf);
+                pane = new JScrollPane(trans);
+                pane.setBackground(GOLD);
+                pane.setBounds(0, 0, 600, 600);
+                add(pane);
+            }
+            // paintComponent which sets the background of the jpanel
+            public void paintComponent(Graphics g) {
+                super.paintComponent(g);
+            }
+        }
+        // method used to initialize the scanner in order to read file with the credits
+        public void tryCatchIt() {
+            try {
+                input = new Scanner(new File("credits.txt"));
+                input2 = new Scanner(new File("transcript.txt"));
+            } catch(FileNotFoundException e) {
+                System.exit(1);
+            }
+        }
+        // paintcomponent which draws all the credits on the screen.
+        public void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            getSTF(25f);
+            g.setFont(stf);
+            g.setColor(GOLD);
+            for(int i = 0; i < creds.size(); i++) {
+                String txt = creds.get(i);
+                int loc = y_coord + 40 * i;
+                if(loc >= 0 && loc <= 830) g.drawString(txt, 100, loc);
+            }
         }
     }
     // This class contains all the information needed to create particles such as powerups, and later on, blood and guts
