@@ -3,7 +3,7 @@ Vishnu Bharadwaj
 4/28/24
 Voyager.java
 This is my game, Voyager. It is a game based off of the Star Trek Original Series that uses all of my java knowledge in
-a fun game. Currently, I have finished level 2 and am working on level 3 + JoeTTS.
+a fun game.
 */
 
 import javax.swing.*; import java.awt.*;
