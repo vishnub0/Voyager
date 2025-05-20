@@ -1,5 +1,4 @@
-# MESSAGE TO STANFORD AIMI SUMMER RESEARCH INTERNSHIP
-Hello! I think I forgot to upload my certificates for the Logic and Problem Solving course and the Philosophy of AI course. I have uploaded them here so that you can verify my participation. I'm really sorry for the inconvenience!
+# Voyager
 
 This is my game for my school Game Project. It is called Voyager and is heavily influenced by the Star Trek Original Series.
 
